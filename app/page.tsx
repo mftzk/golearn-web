@@ -13,7 +13,7 @@ export default function Home() {
         </h1>
         <p className="mt-6 max-w-xl text-lg text-muted leading-relaxed">
           {chapters.length} bab, dari <span className="text-ink">Halo, Go</span> sampai{" "}
-          <span className="text-ink">konkurensi</span>. Setiap bab punya console
+          <span className="text-ink">eBPF</span>. Setiap bab punya console
           interaktif — tulis kode Go asli, jalankan sungguhan, lihat hasilnya.
           Progress belajarmu tersimpan otomatis.
         </p>
@@ -41,7 +41,7 @@ export default function Home() {
           />
           <FeatureCard
             title="Bab per bab"
-            body="Materi tersusun bertahap — dari sintaks dasar sampai goroutine dan channel."
+            body="Materi tersusun bertahap — dari sintaks dasar dan konkurensi sampai topik lanjutan seperti eBPF."
           />
           <FeatureCard
             title="Progress tersimpan"
