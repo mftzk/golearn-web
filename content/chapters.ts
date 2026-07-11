@@ -11,9 +11,93 @@ export interface Chapter {
 
 export const chapters: Chapter[] = [
   {
+    slug: "tentang-go",
+    title: "Tentang Go",
+    order: 1,
+    summary: "sejarah, cara kerja, dan bagaimana Go jalan di mesin",
+    lessonMarkdown: `
+Go (kadang disebut Golang) adalah bahasa pemrograman open source dari Google: **statically typed**, **dikompilasi ke kode mesin native**, punya **garbage collector**, dan dukungan konkurensi bawaan. Sebelum menulis kode, kenali dulu asal-usul dan cara kerjanya. Semua fakta di bawah diambil dari dokumentasi resmi (lihat **Sumber** di akhir).
+
+### Bagaimana Go dibuat
+
+Go lahir dari rasa frustrasi terhadap bahasa yang dipakai di Google saat itu. Menurut FAQ resmi, seorang programmer harus memilih salah satu dari *"efficient compilation, efficient execution, or ease of programming"* — ketiganya tidak tersedia sekaligus dalam satu bahasa mainstream. Ditambah build C++ yang lambat dan naiknya CPU multicore yang menuntut konkurensi sebagai fitur kelas satu.
+
+Tiga perancang awalnya — **Robert Griesemer**, **Rob Pike**, dan **Ken Thompson** — mulai menggambar tujuan bahasa ini di papan tulis pada **21 September 2007**.
+
+- **21 Sep 2007** — Griesemer, Pike, Thompson menyketsa tujuan bahasa baru.
+- **Januari 2008** — Ken Thompson mulai menggarap compiler pertama.
+- **Akhir 2008** — Russ Cox bergabung, mendorong Go dari prototipe jadi kenyataan.
+- **10 Nov 2009** — Go dirilis sebagai proyek open source publik.
+- **Maret 2012** — Go 1.0 dirilis, disertai janji kompatibilitas untuk program Go 1.
+
+### Bagaimana Go bekerja
+
+Tujuan desainnya, dalam kata-kata FAQ Go, adalah menggabungkan *"the ease of programming of an interpreted, dynamically typed language with the efficiency and safety of a statically typed, compiled language."*
+
+- **Statically typed & compiled** — tipe diperiksa saat kompilasi, lalu program di-compile lebih dulu (ahead-of-time) ke kode mesin, bukan diinterpretasi saat jalan.
+- **Kompilasi cepat** — membangun executable besar dirancang memakan *"at most a few seconds"* di satu komputer.
+- **Garbage collected** — memori dikelola otomatis (mark-and-sweep); optimasi bertahun-tahun menekan jeda GC sering ke rentang sub-milidetik walau heap besar.
+- **Konkurensi bawaan** — model dari CSP (Communicating Sequential Processes-nya Tony Hoare). Goroutine sangat murah (stack cuma beberapa kilobyte) sehingga ratusan ribu goroutine muat dalam satu address space, dan channel dipakai untuk komunikasi antar goroutine.
+
+### Bagaimana Go berjalan di atas mesin
+
+Poin penting yang sering disalahpahami: **Go tidak memakai virtual machine.** FAQ menyatakan tegas *"Go's runtime does not include a virtual machine, such as is provided by the Java runtime."* Program Go dikompilasi langsung ke kode mesin native.
+
+- **Binary native & statically linked** — linker toolchain \`gc\` menghasilkan binary statically linked secara default; tiap binary sudah menyertakan Go runtime, jadi jalan tanpa dependensi eksternal.
+- **Go runtime (bukan VM)** — pustaka runtime yang, kata dokumentasi, *"analogous to libc"*: mengurus garbage collection, konkurensi, dan manajemen stack — tapi tetap kode native.
+- **Scheduler goroutine (M:N)** — runtime me-multiplex banyak goroutine ke sekumpulan OS thread. Saat sebuah goroutine memblokir (mis. system call), runtime memindahkan goroutine lain ke thread yang bisa jalan. Implementasinya dikenal sebagai model G–M–P (Goroutine, Machine/OS-thread, Processor).
+- **Stack yang bisa berubah ukuran** — goroutine baru diberi stack beberapa kilobyte; saat kurang, runtime menumbuhkan/menyusutkannya otomatis.
+- **Garbage collector konkuren** — di mesin multiprosesor, kolektor jalan di core CPU terpisah, paralel dengan program utama.
+- **Cross-compile** — karena hasilnya binary native mandiri, kamu bisa mengompilasi untuk target lain (mis. Linux/ARM) dari satu mesin lewat \`GOOS\` dan \`GOARCH\`.
+
+### Sumber
+
+- [Frequently Asked Questions (FAQ) — go.dev](https://go.dev/doc/faq)
+- [Go 1 Release Notes (rilis Maret 2012)](https://go.dev/doc/go1)
+- [Release History — go.dev](https://go.dev/doc/devel/release)
+- [Kode sumber scheduler runtime Go (runtime/proc.go)](https://cs.opensource.google/go/go/+/master:src/runtime/proc.go)
+
+Tugas: jalankan kode di samping — program ini pakai paket \`runtime\` untuk menunjukkan Go benar-benar berjalan native di atas mesin ini (versi, OS, arsitektur, jumlah CPU). Nilainya bisa berbeda tergantung mesin yang menjalankan.
+`,
+    starterCode: `package main
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func main() {
+	// Program ini benar-benar dikompilasi ke kode mesin native, lalu dijalankan
+	// langsung di atas OS — bukan lewat virtual machine.
+	fmt.Println("Versi Go   :", runtime.Version())
+	fmt.Println("Sistem (OS):", runtime.GOOS)
+	fmt.Println("Arsitektur :", runtime.GOARCH)
+	fmt.Println("Jumlah CPU :", runtime.NumCPU())
+	fmt.Println("Goroutine  :", runtime.NumGoroutine())
+}
+`,
+    solutionCode: `package main
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func main() {
+	// Program ini benar-benar dikompilasi ke kode mesin native, lalu dijalankan
+	// langsung di atas OS — bukan lewat virtual machine.
+	fmt.Println("Versi Go   :", runtime.Version())
+	fmt.Println("Sistem (OS):", runtime.GOOS)
+	fmt.Println("Arsitektur :", runtime.GOARCH)
+	fmt.Println("Jumlah CPU :", runtime.NumCPU())
+	fmt.Println("Goroutine  :", runtime.NumGoroutine())
+}
+`,
+  },
+  {
     slug: "hello-go",
     title: "Hello, Go",
-    order: 1,
+    order: 2,
     summary: "package main, fungsi main, dan fmt.Println",
     lessonMarkdown: `
 Setiap program Go dimulai dari **package**. Program yang bisa dijalankan langsung harus berada di \`package main\`, dan harus punya fungsi \`func main()\` — itu adalah titik masuk (entry point) program.
@@ -53,7 +137,7 @@ func main() {
   {
     slug: "variabel-tipe",
     title: "Variabel & Tipe Data",
-    order: 2,
+    order: 3,
     summary: "var, const, tipe dasar, dan :=",
     lessonMarkdown: `
 Go adalah bahasa **statically typed** — setiap variabel punya tipe yang pasti. Ada beberapa cara mendeklarasikan variabel:
@@ -95,7 +179,7 @@ func main() {
   {
     slug: "simbol-operator",
     title: "Simbol & Operator",
-    order: 3,
+    order: 4,
     summary: ":=, =, ==, dan operator lain yang sering dipakai",
     lessonMarkdown: `
 Sebelum lanjut, kita bereskan dulu simbol-simbol yang bakal terus muncul. Yang paling sering bikin bingung pemula: **\`:=\` vs \`=\` vs \`==\`**.
@@ -233,7 +317,7 @@ func jumlah(angka ...int) int {
   {
     slug: "kontrol-alur",
     title: "Kontrol Alur",
-    order: 4,
+    order: 5,
     summary: "if, switch, dan for",
     lessonMarkdown: `
 Go hanya punya satu bentuk perulangan: \`for\`. Tidak ada \`while\` terpisah — cukup gunakan \`for\` tanpa kondisi awal/akhir.
@@ -286,7 +370,7 @@ func main() {
   {
     slug: "fungsi",
     title: "Fungsi",
-    order: 5,
+    order: 6,
     summary: "parameter, banyak nilai balik, dan error",
     lessonMarkdown: `
 Fungsi di Go bisa mengembalikan **lebih dari satu nilai** — pola ini paling sering dipakai untuk mengembalikan hasil sekaligus error.
@@ -338,7 +422,7 @@ func main() {
   {
     slug: "koleksi",
     title: "Koleksi Data",
-    order: 6,
+    order: 7,
     summary: "array, slice, map, dan range",
     lessonMarkdown: `
 **Slice** adalah array dinamis — paling sering dipakai dibanding array biasa. **Map** adalah struktur key-value.
@@ -382,7 +466,7 @@ func main() {
   {
     slug: "struct-method",
     title: "Struct & Method",
-    order: 7,
+    order: 8,
     summary: "struct, method, dan receiver",
     lessonMarkdown: `
 **Struct** mengelompokkan data terkait. **Method** adalah fungsi yang punya *receiver* — mengikatnya ke sebuah tipe.
@@ -441,7 +525,7 @@ func main() {
   {
     slug: "pointer",
     title: "Pointer",
-    order: 8,
+    order: 9,
     summary: "alamat memori & pass by reference",
     lessonMarkdown: `
 Pointer menyimpan **alamat memori** dari sebuah nilai, bukan nilainya langsung. Berguna saat sebuah fungsi perlu mengubah nilai aslinya (bukan salinannya).
@@ -493,7 +577,7 @@ func main() {
   {
     slug: "interface",
     title: "Interface",
-    order: 9,
+    order: 10,
     summary: "kontrak perilaku & polymorphism",
     lessonMarkdown: `
 Interface mendefinisikan **kontrak perilaku** — sekumpulan method yang harus dimiliki sebuah tipe. Tipe apa pun yang punya method tersebut otomatis memenuhi interface itu (tidak perlu kata kunci \`implements\`).
@@ -564,7 +648,7 @@ func main() {
   {
     slug: "konkurensi",
     title: "Konkurensi",
-    order: 10,
+    order: 11,
     summary: "goroutine, channel, dan sync.WaitGroup",
     lessonMarkdown: `
 **Goroutine** adalah unit eksekusi ringan — cukup tambahkan kata kunci \`go\` di depan pemanggilan fungsi. **Channel** dipakai untuk komunikasi antar goroutine dengan aman.
@@ -656,7 +740,7 @@ func main() {
   {
     slug: "capstone",
     title: "Capstone: Mini Project",
-    order: 11,
+    order: 12,
     summary: "gabungkan semua yang sudah dipelajari",
     lessonMarkdown: `
 Saatnya menggabungkan semua yang sudah kamu pelajari: struct, slice, method, dan perulangan.
@@ -741,7 +825,7 @@ func main() {
   {
     slug: "ebpf-pengantar",
     title: "Pengantar eBPF",
-    order: 12,
+    order: 13,
     summary: "program kecil yang jalan di dalam kernel saat ada event",
     lessonMarkdown: `
 **eBPF** (extended Berkeley Packet Filter) memungkinkan kamu menjalankan program kecil **di dalam kernel Linux** — tanpa mengubah kode kernel atau menulis modul kernel. Program itu dipasang di sebuah **hook** dan dijalankan kernel setiap kali sebuah *event* terjadi.
@@ -817,7 +901,7 @@ func main() {
   {
     slug: "ebpf-maps",
     title: "BPF Maps",
-    order: 13,
+    order: 14,
     summary: "berbagi data antara program kernel dan user space",
     lessonMarkdown: `
 Program eBPF di kernel dan program biasa di **user space** perlu bertukar data. Jembatannya adalah **BPF map** — struktur data key-value yang hidup di kernel tapi bisa dibaca/ditulis dari kedua sisi.
@@ -913,7 +997,7 @@ func main() {
   {
     slug: "ebpf-go",
     title: "eBPF dari Go (cilium/ebpf)",
-    order: 14,
+    order: 15,
     summary: "load, attach, dan baca map pakai cilium/ebpf",
     lessonMarkdown: `
 Di Go, library paling populer untuk eBPF adalah [\`github.com/cilium/ebpf\`](https://github.com/cilium/ebpf). Alurnya:
