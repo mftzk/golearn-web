@@ -23,6 +23,9 @@ export default function Header({ user }: { user: SessionUser | null }) {
           <Link href="/chapters" className="text-muted hover:text-ink transition-colors">
             Bab
           </Link>
+          <Link href="/quizzes" className="text-muted hover:text-ink transition-colors">
+            Quiz
+          </Link>
           {user ? (
             <>
               <span className="text-muted hidden sm:inline">

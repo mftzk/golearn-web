@@ -14,8 +14,8 @@ export default function Home() {
         <p className="mt-6 max-w-xl text-lg text-muted leading-relaxed">
           {chapters.length} bab, dari <span className="text-ink">Halo, Go</span> sampai{" "}
           <span className="text-ink">eBPF</span>. Setiap bab punya console
-          interaktif — tulis kode Go asli, jalankan sungguhan, lihat hasilnya.
-          Progress belajarmu tersimpan otomatis.
+          interaktif dan quiz fokus bab — tulis kode Go asli, jalankan sungguhan,
+          lalu cek pemahamanmu. Progress belajarmu tersimpan otomatis.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link
@@ -44,8 +44,8 @@ export default function Home() {
             body="Materi tersusun bertahap — dari sintaks dasar dan konkurensi sampai topik lanjutan seperti eBPF."
           />
           <FeatureCard
-            title="Progress tersimpan"
-            body="Masuk dengan akun, dan progress belajarmu tersimpan lintas perangkat."
+            title="Latihan dan quiz"
+            body="Setiap bab punya coding challenge dan quiz singkat untuk menguji pemahamanmu."
           />
         </div>
       </section>

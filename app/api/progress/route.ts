@@ -10,12 +10,23 @@ export async function GET() {
   }
 
   await ensureSchema();
-  const result = await getPool().query(
-    "SELECT chapter_slug, status, last_code, completed_at FROM progress WHERE user_id = $1",
-    [user.id]
-  );
+  const [chapterResult, quizResult] = await Promise.all([
+    getPool().query(
+      "SELECT chapter_slug, status, last_code, completed_at FROM progress WHERE user_id = $1",
+      [user.id],
+    ),
+    getPool().query(
+      `SELECT chapter_slug, best_score, last_score, attempts, passed,
+              last_attempt_at, passed_at
+       FROM quiz_progress WHERE user_id = $1`,
+      [user.id],
+    ),
+  ]);
 
-  return NextResponse.json({ progress: result.rows });
+  return NextResponse.json({
+    progress: chapterResult.rows,
+    quizProgress: quizResult.rows,
+  });
 }
 
 export async function PUT(request: Request) {
@@ -39,9 +50,17 @@ export async function PUT(request: Request) {
      VALUES ($1, $2, $3, $4, CASE WHEN $3 = 'completed' THEN now() ELSE NULL END, now())
      ON CONFLICT (user_id, chapter_slug)
      DO UPDATE SET
-       status = EXCLUDED.status,
+       status = CASE
+         WHEN progress.status = 'completed' OR EXCLUDED.status = 'completed'
+           THEN 'completed'
+         ELSE 'in_progress'
+       END,
        last_code = EXCLUDED.last_code,
-       completed_at = CASE WHEN EXCLUDED.status = 'completed' THEN now() ELSE progress.completed_at END,
+       completed_at = CASE
+         WHEN progress.status = 'completed' OR EXCLUDED.status = 'completed'
+           THEN COALESCE(progress.completed_at, now())
+         ELSE progress.completed_at
+       END,
        updated_at = now()`,
     [user.id, chapterSlug, status, lastCode]
   );

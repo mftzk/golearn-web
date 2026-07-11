@@ -83,6 +83,19 @@ export default async function ChapterPage({
             </ReactMarkdown>
           </article>
 
+          <div className="mt-8 rounded-2xl border border-clay/30 bg-clay-soft p-5">
+            <p className="text-sm font-medium text-ink">Sudah siap menguji pemahaman?</p>
+            <p className="mt-1 text-sm text-muted">
+              Kerjakan lima soal fokus bab ini, termasuk satu coding challenge.
+            </p>
+            <Link
+              href={`/quizzes/${chapter.slug}`}
+              className="mt-4 inline-flex rounded-full bg-clay px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-clay-hover"
+            >
+              Mulai quiz bab ini →
+            </Link>
+          </div>
+
           <div className="mt-10 flex items-center justify-between border-t border-border pt-6">
             {prev ? (
               <Link

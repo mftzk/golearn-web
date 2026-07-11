@@ -1,9 +1,7 @@
 import { Pool } from "pg";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __golearnPool: Pool | undefined;
-  // eslint-disable-next-line no-var
   var __golearnSchemaReady: Promise<void> | undefined;
 }
 
@@ -41,6 +39,21 @@ async function migrate() {
       last_code    TEXT,
       completed_at TIMESTAMPTZ,
       updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (user_id, chapter_slug)
+    );
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS quiz_progress (
+      id                BIGSERIAL PRIMARY KEY,
+      user_id           BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      chapter_slug      TEXT NOT NULL,
+      best_score        INTEGER NOT NULL DEFAULT 0,
+      last_score        INTEGER NOT NULL DEFAULT 0,
+      attempts          INTEGER NOT NULL DEFAULT 0,
+      passed            BOOLEAN NOT NULL DEFAULT false,
+      last_attempt_at   TIMESTAMPTZ,
+      passed_at         TIMESTAMPTZ,
+      updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
       UNIQUE (user_id, chapter_slug)
     );
   `);

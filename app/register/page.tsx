@@ -27,7 +27,11 @@ export default function RegisterPage() {
         setError(data.error || "Gagal mendaftar.");
         return;
       }
-      router.push("/chapters");
+      const next = new URLSearchParams(window.location.search).get("next");
+      const destination = next && next.startsWith("/") && !next.startsWith("//")
+        ? next
+        : "/chapters";
+      router.push(destination);
       router.refresh();
     } finally {
       setLoading(false);
