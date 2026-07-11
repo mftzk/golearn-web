@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool, ensureSchema } from "@/lib/db";
+import { getPool, ensureSchema } from "@/lib/db";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -17,13 +17,13 @@ export async function POST(request: Request) {
 
   await ensureSchema();
 
-  const existing = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
+  const existing = await getPool().query("SELECT id FROM users WHERE email = $1", [email]);
   if (existing.rowCount && existing.rowCount > 0) {
     return NextResponse.json({ error: "Email sudah terdaftar." }, { status: 409 });
   }
 
   const passwordHash = await hashPassword(password);
-  const result = await pool.query(
+  const result = await getPool().query(
     "INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name",
     [email, passwordHash, name]
   );

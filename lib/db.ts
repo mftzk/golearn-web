@@ -7,20 +7,22 @@ declare global {
   var __golearnSchemaReady: Promise<void> | undefined;
 }
 
-function createPool() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL env var is required");
+// The pool is created lazily on first query, NOT at module load. `next build`
+// imports these route handlers to collect page data, and doing so must not
+// require DATABASE_URL — that env var only needs to exist at request time.
+export function getPool(): Pool {
+  if (!global.__golearnPool) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error("DATABASE_URL env var is required");
+    }
+    global.__golearnPool = new Pool({ connectionString });
   }
-  return new Pool({ connectionString });
-}
-
-export const pool = global.__golearnPool ?? createPool();
-if (process.env.NODE_ENV !== "production") {
-  global.__golearnPool = pool;
+  return global.__golearnPool;
 }
 
 async function migrate() {
+  const pool = getPool();
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id            BIGSERIAL PRIMARY KEY,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { chapters } from "@/content/chapters";
 import { getCurrentUser } from "@/lib/auth";
-import { pool, ensureSchema } from "@/lib/db";
+import { getPool, ensureSchema } from "@/lib/db";
 
 export default async function ChaptersPage() {
   const user = await getCurrentUser();
@@ -9,7 +9,7 @@ export default async function ChaptersPage() {
   let completedSlugs = new Set<string>();
   if (user) {
     await ensureSchema();
-    const result = await pool.query(
+    const result = await getPool().query(
       "SELECT chapter_slug FROM progress WHERE user_id = $1 AND status = 'completed'",
       [user.id]
     );

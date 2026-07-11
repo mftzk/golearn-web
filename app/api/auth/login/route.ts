@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool, ensureSchema } from "@/lib/db";
+import { getPool, ensureSchema } from "@/lib/db";
 import { verifyPassword, setSessionCookie } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   await ensureSchema();
 
-  const result = await pool.query(
+  const result = await getPool().query(
     "SELECT id, email, name, password_hash FROM users WHERE email = $1",
     [email]
   );

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool, ensureSchema } from "@/lib/db";
+import { getPool, ensureSchema } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { getChapter } from "@/content/chapters";
 
@@ -10,7 +10,7 @@ export async function GET() {
   }
 
   await ensureSchema();
-  const result = await pool.query(
+  const result = await getPool().query(
     "SELECT chapter_slug, status, last_code, completed_at FROM progress WHERE user_id = $1",
     [user.id]
   );
@@ -34,7 +34,7 @@ export async function PUT(request: Request) {
   }
 
   await ensureSchema();
-  await pool.query(
+  await getPool().query(
     `INSERT INTO progress (user_id, chapter_slug, status, last_code, completed_at, updated_at)
      VALUES ($1, $2, $3, $4, CASE WHEN $3 = 'completed' THEN now() ELSE NULL END, now())
      ON CONFLICT (user_id, chapter_slug)

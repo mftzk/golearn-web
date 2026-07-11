@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { chapters, getChapter, chapterNeighbors } from "@/content/chapters";
 import { getCurrentUser } from "@/lib/auth";
-import { pool, ensureSchema } from "@/lib/db";
+import { getPool, ensureSchema } from "@/lib/db";
 import CodeConsole from "@/components/CodeConsole";
 
 export function generateStaticParams() {
@@ -26,7 +26,7 @@ export default async function ChapterPage({
 
   if (user) {
     await ensureSchema();
-    const result = await pool.query(
+    const result = await getPool().query(
       "SELECT status, last_code FROM progress WHERE user_id = $1 AND chapter_slug = $2",
       [user.id, chapter.slug]
     );
