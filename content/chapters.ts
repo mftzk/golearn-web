@@ -93,9 +93,147 @@ func main() {
     expectedOutput: "Budi 20",
   },
   {
+    slug: "simbol-operator",
+    title: "Simbol & Operator",
+    order: 3,
+    summary: ":=, =, ==, dan operator lain yang sering dipakai",
+    lessonMarkdown: `
+Sebelum lanjut, kita bereskan dulu simbol-simbol yang bakal terus muncul. Yang paling sering bikin bingung pemula: **\`:=\` vs \`=\` vs \`==\`**.
+
+### Deklarasi vs penugasan vs perbandingan
+
+\`\`\`go
+skor := 10   // :=  bikin variabel BARU + isi nilai (tipe disimpulkan otomatis)
+skor = 25    // =   ubah nilai variabel yang SUDAH ada (bukan bikin baru)
+skor == 25   // ==  BANDINGKAN dua nilai, hasilnya bool (true/false)
+\`\`\`
+
+\`:=\` cuma boleh untuk variabel baru — kalau variabelnya sudah ada, pakai \`=\`. Ingat juga bentuk panjang \`var nama string = "Budi"\` dari bab sebelumnya; \`:=\` hanya versi singkatnya di dalam fungsi.
+
+**Jebakan klasik:** di dalam \`if\`, menulis \`if x = 5\` itu salah (itu penugasan) — yang kamu mau hampir selalu \`if x == 5\` (perbandingan).
+
+### Aritmatika
+
+\`\`\`go
+a + b   a - b   a * b   a / b
+a % b   // sisa bagi (modulo), mis. 25 % 7 = 4
+n++     // tambah 1        n--   // kurang 1
+n += 3  // sama dengan n = n + 3   (ada juga -=, *=, /=)
+\`\`\`
+
+### Perbandingan & logika
+
+\`\`\`go
+==  !=  <  <=  >  >=        // hasil bool
+&&  (dan)   ||  (atau)   !  (bukan)
+lulus := skor >= 20 && sisa > 0
+\`\`\`
+
+### Simbol lanjutan (dibahas lebih dalam di bab Pointer & Konkurensi)
+
+\`\`\`go
+&x        // ambil ALAMAT memori x           (bab Pointer)
+*p        // ambil NILAI di alamat p          (bab Pointer)
+ch <- v   // KIRIM v ke channel               (bab Konkurensi)
+v := <-ch // TERIMA dari channel
+nilai, _ := bagi(20, 6)   // _  buang nilai yang tak dipakai (blank identifier)
+jumlah(1, 2, 3, 4)        // ... variadic: fungsi terima argumen berapa pun
+\`\`\`
+
+Tugas: jalankan kode di samping — ia memakai \`:=\`, \`=\`, \`%\`, \`++\`, \`==\`/\`!=\`, \`&&\`, \`_\`, dan \`...\` sekaligus. Perhatikan komentarnya biar tiap simbol nyantol.
+`,
+    starterCode: `package main
+
+import "fmt"
+
+func main() {
+	// := membuat variabel BARU sekaligus mengisi nilai (tipe otomatis)
+	skor := 10
+	// = mengubah nilai variabel yang SUDAH ada (bukan bikin baru)
+	skor = 25
+
+	sisa := skor % 7 // % = sisa bagi: 25 % 7 = 4
+	skor++           // ++ menambah 1: 25 -> 26
+
+	// == membandingkan (hasilnya bool), beda dari = yang menugaskan
+	fmt.Println("skor =", skor)
+	fmt.Println("sisa =", sisa)
+	fmt.Println("skor == 26:", skor == 26)
+	fmt.Println("skor != sisa:", skor != sisa)
+
+	// && (dan), || (atau), ! (bukan)
+	lulus := skor >= 20 && sisa > 0
+	fmt.Println("lulus:", lulus)
+
+	// _ = blank identifier: buang nilai yang tidak dipakai
+	nilai, _ := bagi(20, 6)
+	fmt.Println("hasil bagi:", nilai)
+
+	// ... = variadic: fungsi menerima argumen berapa pun
+	fmt.Println("total:", jumlah(1, 2, 3, 4))
+}
+
+func bagi(a, b int) (int, int) {
+	return a / b, a % b // hasil bagi, sisa
+}
+
+func jumlah(angka ...int) int {
+	total := 0
+	for _, n := range angka {
+		total += n
+	}
+	return total
+}
+`,
+    solutionCode: `package main
+
+import "fmt"
+
+func main() {
+	// := membuat variabel BARU sekaligus mengisi nilai (tipe otomatis)
+	skor := 10
+	// = mengubah nilai variabel yang SUDAH ada (bukan bikin baru)
+	skor = 25
+
+	sisa := skor % 7 // % = sisa bagi: 25 % 7 = 4
+	skor++           // ++ menambah 1: 25 -> 26
+
+	// == membandingkan (hasilnya bool), beda dari = yang menugaskan
+	fmt.Println("skor =", skor)
+	fmt.Println("sisa =", sisa)
+	fmt.Println("skor == 26:", skor == 26)
+	fmt.Println("skor != sisa:", skor != sisa)
+
+	// && (dan), || (atau), ! (bukan)
+	lulus := skor >= 20 && sisa > 0
+	fmt.Println("lulus:", lulus)
+
+	// _ = blank identifier: buang nilai yang tidak dipakai
+	nilai, _ := bagi(20, 6)
+	fmt.Println("hasil bagi:", nilai)
+
+	// ... = variadic: fungsi menerima argumen berapa pun
+	fmt.Println("total:", jumlah(1, 2, 3, 4))
+}
+
+func bagi(a, b int) (int, int) {
+	return a / b, a % b // hasil bagi, sisa
+}
+
+func jumlah(angka ...int) int {
+	total := 0
+	for _, n := range angka {
+		total += n
+	}
+	return total
+}
+`,
+    expectedOutput: "skor = 26\nsisa = 4\nskor == 26: true\nskor != sisa: true\nlulus: true\nhasil bagi: 3\ntotal: 10",
+  },
+  {
     slug: "kontrol-alur",
     title: "Kontrol Alur",
-    order: 3,
+    order: 4,
     summary: "if, switch, dan for",
     lessonMarkdown: `
 Go hanya punya satu bentuk perulangan: \`for\`. Tidak ada \`while\` terpisah — cukup gunakan \`for\` tanpa kondisi awal/akhir.
@@ -148,7 +286,7 @@ func main() {
   {
     slug: "fungsi",
     title: "Fungsi",
-    order: 4,
+    order: 5,
     summary: "parameter, banyak nilai balik, dan error",
     lessonMarkdown: `
 Fungsi di Go bisa mengembalikan **lebih dari satu nilai** — pola ini paling sering dipakai untuk mengembalikan hasil sekaligus error.
@@ -200,7 +338,7 @@ func main() {
   {
     slug: "koleksi",
     title: "Koleksi Data",
-    order: 5,
+    order: 6,
     summary: "array, slice, map, dan range",
     lessonMarkdown: `
 **Slice** adalah array dinamis — paling sering dipakai dibanding array biasa. **Map** adalah struktur key-value.
@@ -244,7 +382,7 @@ func main() {
   {
     slug: "struct-method",
     title: "Struct & Method",
-    order: 6,
+    order: 7,
     summary: "struct, method, dan receiver",
     lessonMarkdown: `
 **Struct** mengelompokkan data terkait. **Method** adalah fungsi yang punya *receiver* — mengikatnya ke sebuah tipe.
@@ -303,7 +441,7 @@ func main() {
   {
     slug: "pointer",
     title: "Pointer",
-    order: 7,
+    order: 8,
     summary: "alamat memori & pass by reference",
     lessonMarkdown: `
 Pointer menyimpan **alamat memori** dari sebuah nilai, bukan nilainya langsung. Berguna saat sebuah fungsi perlu mengubah nilai aslinya (bukan salinannya).
@@ -355,7 +493,7 @@ func main() {
   {
     slug: "interface",
     title: "Interface",
-    order: 8,
+    order: 9,
     summary: "kontrak perilaku & polymorphism",
     lessonMarkdown: `
 Interface mendefinisikan **kontrak perilaku** — sekumpulan method yang harus dimiliki sebuah tipe. Tipe apa pun yang punya method tersebut otomatis memenuhi interface itu (tidak perlu kata kunci \`implements\`).
@@ -426,7 +564,7 @@ func main() {
   {
     slug: "konkurensi",
     title: "Konkurensi",
-    order: 9,
+    order: 10,
     summary: "goroutine, channel, dan sync.WaitGroup",
     lessonMarkdown: `
 **Goroutine** adalah unit eksekusi ringan — cukup tambahkan kata kunci \`go\` di depan pemanggilan fungsi. **Channel** dipakai untuk komunikasi antar goroutine dengan aman.
@@ -518,7 +656,7 @@ func main() {
   {
     slug: "capstone",
     title: "Capstone: Mini Project",
-    order: 10,
+    order: 11,
     summary: "gabungkan semua yang sudah dipelajari",
     lessonMarkdown: `
 Saatnya menggabungkan semua yang sudah kamu pelajari: struct, slice, method, dan perulangan.
@@ -603,7 +741,7 @@ func main() {
   {
     slug: "ebpf-pengantar",
     title: "Pengantar eBPF",
-    order: 11,
+    order: 12,
     summary: "program kecil yang jalan di dalam kernel saat ada event",
     lessonMarkdown: `
 **eBPF** (extended Berkeley Packet Filter) memungkinkan kamu menjalankan program kecil **di dalam kernel Linux** — tanpa mengubah kode kernel atau menulis modul kernel. Program itu dipasang di sebuah **hook** dan dijalankan kernel setiap kali sebuah *event* terjadi.
@@ -679,7 +817,7 @@ func main() {
   {
     slug: "ebpf-maps",
     title: "BPF Maps",
-    order: 12,
+    order: 13,
     summary: "berbagi data antara program kernel dan user space",
     lessonMarkdown: `
 Program eBPF di kernel dan program biasa di **user space** perlu bertukar data. Jembatannya adalah **BPF map** — struktur data key-value yang hidup di kernel tapi bisa dibaca/ditulis dari kedua sisi.
@@ -775,7 +913,7 @@ func main() {
   {
     slug: "ebpf-go",
     title: "eBPF dari Go (cilium/ebpf)",
-    order: 13,
+    order: 14,
     summary: "load, attach, dan baca map pakai cilium/ebpf",
     lessonMarkdown: `
 Di Go, library paling populer untuk eBPF adalah [\`github.com/cilium/ebpf\`](https://github.com/cilium/ebpf). Alurnya:
