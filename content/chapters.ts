@@ -540,7 +540,7 @@ func (s Siswa) RataRata() float64 {
 }
 \`\`\`
 
-Jalankan kode di samping untuk melihat hasilnya. Ini adalah bab terakhir — selamat, kamu sudah menyelesaikan dasar-dasar Go!
+Jalankan kode di samping untuk melihat hasilnya. Selamat, kamu sudah menyelesaikan dasar-dasar Go! Lanjut ke modul lanjutan berikutnya: **eBPF**.
 `,
     starterCode: `package main
 
@@ -599,6 +599,304 @@ func main() {
 }
 `,
     expectedOutput: "Budi: 85.00\nSari: 95.00",
+  },
+  {
+    slug: "ebpf-pengantar",
+    title: "Pengantar eBPF",
+    order: 11,
+    summary: "program kecil yang jalan di dalam kernel saat ada event",
+    lessonMarkdown: `
+**eBPF** (extended Berkeley Packet Filter) memungkinkan kamu menjalankan program kecil **di dalam kernel Linux** — tanpa mengubah kode kernel atau menulis modul kernel. Program itu dipasang di sebuah **hook** dan dijalankan kernel setiap kali sebuah *event* terjadi.
+
+Contoh hook yang umum:
+
+- **kprobe / tracepoint** — event di fungsi kernel (mis. tiap kali ada \`syscall\`).
+- **XDP** — event di kartu jaringan, jalan paling awal saat paket masuk (cocok untuk filter/DDoS).
+- **uprobe** — event di fungsi program user space.
+
+Sebelum program di-*load*, kernel menjalankan **verifier**: ia memastikan program aman (tidak ada loop tak terbatas, tidak akses memori sembarangan) sehingga tidak bisa membuat kernel crash. Setelah lolos, program di-**JIT compile** jadi kode mesin native supaya cepat.
+
+Karena program eBPF asli butuh **kernel Linux + hak root**, ia tidak bisa dijalankan di panel ini. Jadi kita **tiru alurnya** dengan Go biasa: bayangkan \`handlePacket\` di bawah adalah "program eBPF" yang dipanggil kernel setiap ada paket masuk, dan ia menghitung paket per protokol.
+
+\`\`\`text
+paket masuk ─▶ [hook XDP] ─▶ program eBPF ─▶ update hitungan
+\`\`\`
+
+Tugas: jalankan kode di samping — ia menghitung berapa banyak paket \`tcp\`, \`udp\`, dan \`icmp\` dari aliran event.
+`,
+    starterCode: `package main
+
+import "fmt"
+
+// Bayangkan handlePacket ini "program eBPF" yang dijalankan kernel
+// setiap ada paket masuk. Di dunia nyata ia berjalan DI DALAM kernel.
+func handlePacket(proto string, counter map[string]int) {
+	counter[proto]++
+}
+
+func main() {
+	// Simulasi aliran event yang dikirim kernel ke program eBPF.
+	packets := []string{"tcp", "udp", "tcp", "tcp", "udp", "icmp"}
+
+	counter := map[string]int{}
+	for _, p := range packets {
+		handlePacket(p, counter)
+	}
+
+	// Cetak terurut biar hasilnya konsisten.
+	fmt.Println("icmp:", counter["icmp"])
+	fmt.Println("tcp:", counter["tcp"])
+	fmt.Println("udp:", counter["udp"])
+}
+`,
+    solutionCode: `package main
+
+import "fmt"
+
+// Bayangkan handlePacket ini "program eBPF" yang dijalankan kernel
+// setiap ada paket masuk. Di dunia nyata ia berjalan DI DALAM kernel.
+func handlePacket(proto string, counter map[string]int) {
+	counter[proto]++
+}
+
+func main() {
+	// Simulasi aliran event yang dikirim kernel ke program eBPF.
+	packets := []string{"tcp", "udp", "tcp", "tcp", "udp", "icmp"}
+
+	counter := map[string]int{}
+	for _, p := range packets {
+		handlePacket(p, counter)
+	}
+
+	// Cetak terurut biar hasilnya konsisten.
+	fmt.Println("icmp:", counter["icmp"])
+	fmt.Println("tcp:", counter["tcp"])
+	fmt.Println("udp:", counter["udp"])
+}
+`,
+    expectedOutput: "icmp: 1\ntcp: 3\nudp: 2",
+  },
+  {
+    slug: "ebpf-maps",
+    title: "BPF Maps",
+    order: 12,
+    summary: "berbagi data antara program kernel dan user space",
+    lessonMarkdown: `
+Program eBPF di kernel dan program biasa di **user space** perlu bertukar data. Jembatannya adalah **BPF map** — struktur data key-value yang hidup di kernel tapi bisa dibaca/ditulis dari kedua sisi.
+
+Beberapa tipe map yang sering dipakai:
+
+- **hash** — key-value bebas, mirip \`map\` di Go (mis. key = PID).
+- **array** — key berupa index integer, ukuran tetap.
+- **per-cpu** — tiap CPU punya salinan sendiri, dijumlahkan saat dibaca (menghindari *lock* saat menulis).
+
+Pola paling umum: program di kernel **menaikkan counter** di map setiap ada event, lalu user space **membaca** map itu untuk menampilkan statistik. Di sini kita tiru dengan \`map[int]int\` biasa: hitung berapa \`syscall\` yang dilakukan tiap proses (PID).
+
+\`\`\`text
+event syscall ─▶ [program eBPF] ─▶ bpfMap[PID]++ ─▶ dibaca user space
+\`\`\`
+
+Tugas: jalankan kode di samping — ia mengagregasi jumlah syscall per PID ke dalam "BPF map", lalu mencetaknya terurut.
+`,
+    starterCode: `package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Event yang "ditangkap" program eBPF di kernel.
+type Event struct {
+	PID  int
+	Call string
+}
+
+func main() {
+	events := []Event{
+		{1001, "read"}, {1001, "write"}, {1002, "open"},
+		{1001, "read"}, {1002, "open"}, {1002, "close"},
+	}
+
+	// BPF map disimulasikan sebagai map Go: key = PID, value = jumlah syscall.
+	bpfMap := map[int]int{}
+	for _, e := range events {
+		bpfMap[e.PID]++ // program di kernel menaikkan counter
+	}
+
+	// User space membaca map (urutkan key biar output stabil).
+	pids := make([]int, 0, len(bpfMap))
+	for pid := range bpfMap {
+		pids = append(pids, pid)
+	}
+	sort.Ints(pids)
+	for _, pid := range pids {
+		fmt.Printf("PID %d: %d syscall\\n", pid, bpfMap[pid])
+	}
+}
+`,
+    solutionCode: `package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Event yang "ditangkap" program eBPF di kernel.
+type Event struct {
+	PID  int
+	Call string
+}
+
+func main() {
+	events := []Event{
+		{1001, "read"}, {1001, "write"}, {1002, "open"},
+		{1001, "read"}, {1002, "open"}, {1002, "close"},
+	}
+
+	// BPF map disimulasikan sebagai map Go: key = PID, value = jumlah syscall.
+	bpfMap := map[int]int{}
+	for _, e := range events {
+		bpfMap[e.PID]++ // program di kernel menaikkan counter
+	}
+
+	// User space membaca map (urutkan key biar output stabil).
+	pids := make([]int, 0, len(bpfMap))
+	for pid := range bpfMap {
+		pids = append(pids, pid)
+	}
+	sort.Ints(pids)
+	for _, pid := range pids {
+		fmt.Printf("PID %d: %d syscall\\n", pid, bpfMap[pid])
+	}
+}
+`,
+    expectedOutput: "PID 1001: 3 syscall\nPID 1002: 3 syscall",
+  },
+  {
+    slug: "ebpf-go",
+    title: "eBPF dari Go (cilium/ebpf)",
+    order: 13,
+    summary: "load, attach, dan baca map pakai cilium/ebpf",
+    lessonMarkdown: `
+Di Go, library paling populer untuk eBPF adalah [\`github.com/cilium/ebpf\`](https://github.com/cilium/ebpf). Alurnya:
+
+1. Tulis program eBPF dalam **C**, lalu \`bpf2go\` meng-compile-nya jadi object \`.o\` sekaligus membuat kode Go pembungkusnya.
+2. Di Go, panggil \`LoadObjects\` untuk memuat program + map ke kernel.
+3. **Attach** program ke hook (mis. XDP di sebuah interface).
+4. Loop di user space membaca **map** atau **ring buffer** untuk mengambil hasilnya.
+
+\`\`\`go
+// CONTOH ILUSTRATIF — TIDAK BISA dijalankan di panel ini.
+// Butuh root + kernel Linux + object eBPF hasil bpf2go.
+package main
+
+import (
+	"github.com/cilium/ebpf/link"
+	"github.com/cilium/ebpf/rlimit"
+)
+
+func main() {
+	rlimit.RemoveMemlock()
+
+	var objs counterObjects           // dibuat oleh bpf2go
+	loadCounterObjects(&objs, nil)     // load program + map ke kernel
+	defer objs.Close()
+
+	l, _ := link.AttachXDP(link.XDPOptions{
+		Program:   objs.CountPackets,  // program eBPF
+		Interface: 2,                   // index interface (mis. eth0)
+	})
+	defer l.Close()
+
+	// user space baca map objs.PktCount secara periodik...
+}
+\`\`\`
+
+Karena butuh root + kernel, kita **tiru bagian user space-nya** saja: baca event dari sebuah "ring buffer" (di sini slice), agregasi byte per alamat IP, lalu tampilkan *top talkers* terurut dari yang terbesar.
+
+Tugas: jalankan kode di samping — ia menjumlahkan byte per IP dan mengurutkannya dari yang paling banyak.
+`,
+    starterCode: `package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Di produksi, user space membaca event dari ring buffer yang diisi
+// program eBPF di kernel. Di sini kita tiru dengan slice.
+type Conn struct {
+	Src   string
+	Bytes int
+}
+
+func main() {
+	ringBuffer := []Conn{
+		{"10.0.0.1", 500}, {"10.0.0.2", 200},
+		{"10.0.0.1", 300}, {"10.0.0.3", 100},
+		{"10.0.0.2", 400},
+	}
+
+	traffic := map[string]int{}
+	for _, c := range ringBuffer {
+		traffic[c.Src] += c.Bytes
+	}
+
+	type row struct {
+		ip string
+		b  int
+	}
+	rows := make([]row, 0, len(traffic))
+	for ip, b := range traffic {
+		rows = append(rows, row{ip, b})
+	}
+	sort.Slice(rows, func(i, j int) bool { return rows[i].b > rows[j].b })
+	for _, r := range rows {
+		fmt.Printf("%s -> %d bytes\\n", r.ip, r.b)
+	}
+}
+`,
+    solutionCode: `package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Di produksi, user space membaca event dari ring buffer yang diisi
+// program eBPF di kernel. Di sini kita tiru dengan slice.
+type Conn struct {
+	Src   string
+	Bytes int
+}
+
+func main() {
+	ringBuffer := []Conn{
+		{"10.0.0.1", 500}, {"10.0.0.2", 200},
+		{"10.0.0.1", 300}, {"10.0.0.3", 100},
+		{"10.0.0.2", 400},
+	}
+
+	traffic := map[string]int{}
+	for _, c := range ringBuffer {
+		traffic[c.Src] += c.Bytes
+	}
+
+	type row struct {
+		ip string
+		b  int
+	}
+	rows := make([]row, 0, len(traffic))
+	for ip, b := range traffic {
+		rows = append(rows, row{ip, b})
+	}
+	sort.Slice(rows, func(i, j int) bool { return rows[i].b > rows[j].b })
+	for _, r := range rows {
+		fmt.Printf("%s -> %d bytes\\n", r.ip, r.b)
+	}
+}
+`,
+    expectedOutput: "10.0.0.1 -> 800 bytes\n10.0.0.2 -> 600 bytes\n10.0.0.3 -> 100 bytes",
   },
 ];
 
