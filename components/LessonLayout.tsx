@@ -59,7 +59,7 @@ export default function LessonLayout({
       {open && (
         <aside
           id="chapter-table-of-contents"
-          className="hidden lg:block lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto"
+          className="hidden lg:block lg:sticky lg:left-[calc((100vw-100%)/-2)] lg:top-24 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto"
         >
           <div className="flex items-center justify-between px-3 pb-2">
             <p className="text-xs font-medium uppercase tracking-wide text-muted">
