@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getPool, ensureSchema } from "@/lib/db";
 import CodeConsole from "@/components/CodeConsole";
 import ChapterSidebar from "@/components/ChapterSidebar";
+import LessonLayout from "@/components/LessonLayout";
 
 export function generateStaticParams() {
   return chapters.map((c) => ({ slug: c.slug }));
@@ -54,15 +55,11 @@ export default async function ChapterPage({
         ← Semua bab
       </Link>
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-[15rem_1fr]">
-        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-          <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-muted">
-            Daftar isi
-          </p>
+      <LessonLayout
+        sidebar={
           <ChapterSidebar currentSlug={chapter.slug} completedSlugs={completedSlugs} />
-        </aside>
-
-        <div>
+        }
+      >
           <details className="lg:hidden mb-6 rounded-xl border border-border bg-surface">
             <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-ink">
               Daftar isi — Bab {chapter.order}/{chapters.length}
@@ -120,8 +117,7 @@ export default async function ChapterPage({
           />
         </div>
           </div>
-        </div>
-      </div>
+      </LessonLayout>
     </div>
   );
 }
