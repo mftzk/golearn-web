@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { chapters } from "@/content/chapters";
+import { chapters, type ChapterSection } from "@/content/chapters";
 
 export default function ChapterSidebar({
   currentSlug,
   completedSlugs,
+  sections,
 }: {
   currentSlug: string;
   completedSlugs: Set<string>;
+  sections: ChapterSection[];
 }) {
   return (
-    <nav aria-label="Daftar bab">
+    <nav aria-label="Daftar bab dan subbab">
       <ol className="space-y-1">
         {chapters.map((c) => {
           const active = c.slug === currentSlug;
@@ -38,6 +40,23 @@ export default function ChapterSidebar({
                 </span>
                 <span className="leading-snug">{c.title}</span>
               </Link>
+              {active && sections.length > 0 && (
+                <ol
+                  aria-label={`Subbab ${c.title}`}
+                  className="ml-9 mt-1 space-y-0.5 border-l border-border pl-3"
+                >
+                  {sections.map((section) => (
+                    <li key={section.id}>
+                      <Link
+                        href={`/chapters/${c.slug}#${section.id}`}
+                        className="block rounded-md px-2 py-1.5 text-xs leading-snug text-muted transition-colors hover:bg-surface-alt hover:text-ink"
+                      >
+                        {section.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </li>
           );
         })}

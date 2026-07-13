@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { chapters, getChapter, chapterNeighbors } from "@/content/chapters";
+import {
+  chapters,
+  getChapter,
+  getChapterSections,
+  chapterNeighbors,
+} from "@/content/chapters";
 import { getCurrentUser } from "@/lib/auth";
 import { getPool, ensureSchema } from "@/lib/db";
 import CodeConsole from "@/components/CodeConsole";
@@ -48,6 +53,7 @@ export default async function ChapterPage({
   }
 
   const { prev, next } = chapterNeighbors(slug);
+  const sections = getChapterSections(chapter);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
@@ -57,7 +63,11 @@ export default async function ChapterPage({
 
       <LessonLayout
         sidebar={
-          <ChapterSidebar currentSlug={chapter.slug} completedSlugs={completedSlugs} />
+          <ChapterSidebar
+            currentSlug={chapter.slug}
+            completedSlugs={completedSlugs}
+            sections={sections}
+          />
         }
       >
           <details className="lg:hidden mb-6 rounded-xl border border-border bg-surface">
@@ -65,7 +75,11 @@ export default async function ChapterPage({
               Daftar isi — Bab {chapter.order}/{chapters.length}
             </summary>
             <div className="border-t border-border px-2 py-2">
-              <ChapterSidebar currentSlug={chapter.slug} completedSlugs={completedSlugs} />
+              <ChapterSidebar
+                currentSlug={chapter.slug}
+                completedSlugs={completedSlugs}
+                sections={sections}
+              />
             </div>
           </details>
 
@@ -78,7 +92,22 @@ export default async function ChapterPage({
             {chapter.title}
           </h1>
           <article className="prose-lesson">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h3({ node, children }) {
+                  const section = sections.find(
+                    (candidate) => candidate.sourceOffset === node?.position?.start.offset,
+                  );
+
+                  return (
+                    <h3 id={section?.id} className="scroll-mt-24">
+                      {children}
+                    </h3>
+                  );
+                },
+              }}
+            >
               {chapter.lessonMarkdown}
             </ReactMarkdown>
           </article>

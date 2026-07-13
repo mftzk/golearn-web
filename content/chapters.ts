@@ -9,6 +9,12 @@ export interface Chapter {
   expectedOutput?: string;
 }
 
+export interface ChapterSection {
+  id: string;
+  title: string;
+  sourceOffset: number;
+}
+
 export const chapters: Chapter[] = [
   {
     slug: "tentang-go",
@@ -1174,6 +1180,40 @@ func main() {
 
 export function getChapter(slug: string): Chapter | undefined {
   return chapters.find((c) => c.slug === slug);
+}
+
+export function getChapterSections(chapter: Chapter): ChapterSection[] {
+  const sections: ChapterSection[] = [];
+  const usedIds = new Map<string, number>();
+  const headingPattern = /^###\s+(.+?)\s*$/gm;
+
+  for (const match of chapter.lessonMarkdown.matchAll(headingPattern)) {
+    const title = cleanHeadingTitle(match[1]);
+    const baseId = slugifyHeading(title) || "bagian";
+    const occurrence = usedIds.get(baseId) ?? 0;
+    usedIds.set(baseId, occurrence + 1);
+
+    sections.push({
+      id: occurrence === 0 ? baseId : `${baseId}-${occurrence + 1}`,
+      title,
+      sourceOffset: match.index ?? 0,
+    });
+  }
+
+  return sections;
+}
+
+function cleanHeadingTitle(title: string): string {
+  return title.replace(/[`*_~]/g, "").trim();
+}
+
+function slugifyHeading(title: string): string {
+  return title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export function chapterNeighbors(slug: string): {
