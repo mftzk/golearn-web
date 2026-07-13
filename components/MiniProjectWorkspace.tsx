@@ -226,7 +226,7 @@ export default function MiniProjectWorkspace({
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-[180px_minmax(0,1fr)_320px]">
+      <div className="grid lg:grid-cols-[180px_minmax(0,1fr)] xl:grid-cols-[180px_minmax(0,1fr)_280px]">
         <aside className="border-b border-border bg-surface-alt p-3 lg:border-b-0 lg:border-r">
           <p className="px-2 pb-2 text-xs font-medium uppercase tracking-wide text-muted">
             File project
@@ -376,7 +376,7 @@ export default function MiniProjectWorkspace({
           </div>
         </div>
 
-        <aside className="border-t border-border bg-surface-alt p-4 sm:p-5 lg:sticky lg:top-6 lg:self-start lg:border-l lg:border-t-0">
+        <aside className="border-t border-border bg-surface-alt p-4 sm:p-5 lg:col-span-2 xl:col-span-1 xl:sticky xl:top-6 xl:self-start xl:border-l xl:border-t-0">
           <CluePanel
             activeFile={activeFile}
             activeClues={activeClues}
@@ -405,7 +405,7 @@ function CluePanel({
 }) {
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-3 lg:block">
+      <div className="flex flex-wrap items-start justify-between gap-3 xl:block">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-clay">
             Clue eksplisit
@@ -415,7 +415,7 @@ function CluePanel({
             {revealedClueCount}/{activeClues.length} clue dibuka
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 lg:mt-4">
+        <div className="flex flex-wrap gap-2 xl:mt-4">
           <button
             type="button"
             onClick={onRevealNext}
