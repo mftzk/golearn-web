@@ -52,6 +52,7 @@ export default function MiniProjectWorkspace({
   const router = useRouter();
   const [files, setFiles] = useState(() => createFileMap(project, initialFiles));
   const [activeFile, setActiveFile] = useState(project.files[0]?.name ?? "");
+  const [revealedClues, setRevealedClues] = useState<Record<string, number>>({});
   const [stdin, setStdin] = useState(project.sampleInput);
   const [runResult, setRunResult] = useState<RunResult | null>(null);
   const [checkResult, setCheckResult] = useState<CheckResult | null>(null);
@@ -66,6 +67,9 @@ export default function MiniProjectWorkspace({
   const saveRequestRef = useRef(0);
 
   const activeContent = files[activeFile] ?? "";
+  const activeClues =
+    project.files.find((file) => file.name === activeFile)?.clues ?? [];
+  const revealedClueCount = revealedClues[activeFile] ?? 0;
   const canSubmit = Object.values(files).every((content) => content.trim().length > 0);
 
   useEffect(() => {
@@ -177,6 +181,21 @@ export default function MiniProjectWorkspace({
     setError(null);
   }
 
+  function revealNextClue() {
+    setRevealedClues((previous) => {
+      const currentCount = previous[activeFile] ?? 0;
+      if (currentCount >= activeClues.length) return previous;
+      return { ...previous, [activeFile]: currentCount + 1 };
+    });
+  }
+
+  function revealAllClues() {
+    setRevealedClues((previous) => ({
+      ...previous,
+      [activeFile]: activeClues.length,
+    }));
+  }
+
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-soft">
       <div className="border-b border-border px-5 py-5 sm:px-7">
@@ -250,6 +269,57 @@ export default function MiniProjectWorkspace({
             onChange={updateFile}
             basicSetup={{ tabSize: 4 }}
           />
+
+          <div className="border-t border-border bg-surface-alt px-4 py-4 sm:px-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-clay">
+                  Clue eksplisit · {activeFile}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {revealedClueCount}/{activeClues.length} clue dibuka
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={revealNextClue}
+                  disabled={revealedClueCount >= activeClues.length}
+                  className="rounded-full border border-clay px-3 py-1.5 text-xs font-medium text-clay transition-colors hover:bg-clay hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {revealedClueCount === 0
+                    ? "Tampilkan clue pertama"
+                    : revealedClueCount >= activeClues.length
+                      ? "Semua clue terbuka"
+                      : "Clue berikutnya"}
+                </button>
+                {revealedClueCount > 0 && revealedClueCount < activeClues.length && (
+                  <button
+                    type="button"
+                    onClick={revealAllClues}
+                    className="rounded-full px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface hover:text-ink"
+                  >
+                    Tampilkan semua
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {revealedClueCount === 0 ? (
+              <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-3 text-sm leading-6 text-muted">
+                Buka clue untuk mendapat langkah eksplisit tentang file ini.
+              </p>
+            ) : (
+              <ol
+                aria-live="polite"
+                className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-ink"
+              >
+                {activeClues.slice(0, revealedClueCount).map((clue, index) => (
+                  <li key={`${activeFile}-clue-${index}`}>{clue}</li>
+                ))}
+              </ol>
+            )}
+          </div>
 
           <div className="border-t border-border p-4 sm:p-5">
             <label htmlFor="mini-project-stdin" className="text-sm font-medium text-ink">

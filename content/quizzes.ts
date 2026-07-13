@@ -40,6 +40,7 @@ export interface CodingQuestion {
 export interface MiniProjectFile {
   name: string;
   starterCode: string;
+  clues: string[];
 }
 
 export interface MiniProjectTest {
@@ -87,6 +88,7 @@ export interface PublicChapterQuiz {
 export interface PublicMiniProjectFile {
   name: string;
   content: string;
+  clues: string[];
 }
 
 export interface PublicMiniProject {
@@ -1411,6 +1413,14 @@ func main() {
 	// - SUMMARY mencetak hasil formatSummary.
 }
 `,
+      clues: [
+        "1. Tambahkan import bufio, fmt, os, strconv, dan strings.",
+        "2. Di dalam main, buat scanner := bufio.NewScanner(os.Stdin) dan tasks := []Task{}.",
+        "3. Gunakan loop scanner.Scan() untuk membaca input sampai EOF. Trim spasi dan abaikan baris kosong.",
+        "4. Pecah baris dengan strings.Fields, lalu gunakan fields[0] sebagai command.",
+        "5. ADD mengambil judul setelah nama command lalu memanggil addTask. DONE harus mengubah ID dari string menjadi int sebelum memanggil completeTask.",
+        "6. LIST mencetak setiap task dengan fmt.Println(formatTask(task)); SUMMARY mencetak formatSummary(tasks).",
+      ],
     },
     {
       name: "todo.go",
@@ -1431,6 +1441,13 @@ func main() {
 // - Tandai Done=true jika task ditemukan.
 // - Abaikan ID yang tidak ada.
 `,
+      clues: [
+        "1. Deklarasikan type Task struct dengan field ID int, Title string, dan Done bool.",
+        "2. Tulis func addTask(tasks []Task, title string) []Task.",
+        "3. Karena task tidak dihapus, ID baru bisa dibuat dari len(tasks)+1. Append Task baru dengan Done=false lalu return slice-nya.",
+        "4. Tulis func completeTask(tasks []Task, id int) []Task. Range berdasarkan index agar elemen asli bisa diubah.",
+        "5. Jika tasks[index].ID sama dengan id, ubah tasks[index].Done menjadi true. ID yang tidak ditemukan tidak perlu mengubah apa pun.",
+      ],
     },
     {
       name: "format.go",
@@ -1450,6 +1467,13 @@ func main() {
 //   Selesai: 1
 //   Terbuka: 1
 `,
+      clues: [
+        "1. Tambahkan import fmt.",
+        "2. Tulis func formatTask(task Task) string.",
+        "3. Pilih marker [x] jika task.Done true, selain itu gunakan [ ]. Susun output dengan urutan ID, marker, lalu Title.",
+        "4. Tulis func formatSummary(tasks []Task) string dan hitung total, selesai, serta terbuka.",
+        "5. Gunakan fmt.Sprintf dengan tiga baris persis: Total: <total>, Selesai: <selesai>, dan Terbuka: <terbuka>.",
+      ],
     },
   ],
   tests: [
@@ -1535,6 +1559,7 @@ export function toPublicMiniProject(
     files: quiz.files.map((file) => ({
       name: file.name,
       content: file.starterCode,
+      clues: file.clues,
     })),
   };
 }
@@ -1571,6 +1596,11 @@ export function isValidMiniProject(quiz: MiniProjectQuiz): boolean {
     uniqueNames.size === names.length &&
     names.every((name) => name.endsWith(".go")) &&
     quiz.files.every((file) => file.starterCode.trim().length > 0) &&
+    quiz.files.every(
+      (file) =>
+        file.clues.length > 0 &&
+        file.clues.every((clue) => clue.trim().length > 0),
+    ) &&
     quiz.tests.length === 5 &&
     quiz.tests.every((test) => test.expectedOutput.trim().length > 0)
   );
