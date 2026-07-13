@@ -226,7 +226,7 @@ export default function MiniProjectWorkspace({
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-[180px_minmax(0,1fr)]">
+      <div className="grid lg:grid-cols-[180px_minmax(0,1fr)_320px]">
         <aside className="border-b border-border bg-surface-alt p-3 lg:border-b-0 lg:border-r">
           <p className="px-2 pb-2 text-xs font-medium uppercase tracking-wide text-muted">
             File project
@@ -269,57 +269,6 @@ export default function MiniProjectWorkspace({
             onChange={updateFile}
             basicSetup={{ tabSize: 4 }}
           />
-
-          <div className="border-t border-border bg-surface-alt px-4 py-4 sm:px-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-clay">
-                  Clue eksplisit · {activeFile}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {revealedClueCount}/{activeClues.length} clue dibuka
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={revealNextClue}
-                  disabled={revealedClueCount >= activeClues.length}
-                  className="rounded-full border border-clay px-3 py-1.5 text-xs font-medium text-clay transition-colors hover:bg-clay hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {revealedClueCount === 0
-                    ? "Tampilkan clue pertama"
-                    : revealedClueCount >= activeClues.length
-                      ? "Semua clue terbuka"
-                      : "Clue berikutnya"}
-                </button>
-                {revealedClueCount > 0 && revealedClueCount < activeClues.length && (
-                  <button
-                    type="button"
-                    onClick={revealAllClues}
-                    className="rounded-full px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface hover:text-ink"
-                  >
-                    Tampilkan semua
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {revealedClueCount === 0 ? (
-              <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-3 text-sm leading-6 text-muted">
-                Buka clue untuk mendapat langkah eksplisit tentang file ini.
-              </p>
-            ) : (
-              <ol
-                aria-live="polite"
-                className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-ink"
-              >
-                {activeClues.slice(0, revealedClueCount).map((clue, index) => (
-                  <li key={`${activeFile}-clue-${index}`}>{clue}</li>
-                ))}
-              </ol>
-            )}
-          </div>
 
           <div className="border-t border-border p-4 sm:p-5">
             <label htmlFor="mini-project-stdin" className="text-sm font-medium text-ink">
@@ -426,8 +375,86 @@ export default function MiniProjectWorkspace({
             )}
           </div>
         </div>
+
+        <aside className="border-t border-border bg-surface-alt p-4 sm:p-5 lg:sticky lg:top-6 lg:self-start lg:border-l lg:border-t-0">
+          <CluePanel
+            activeFile={activeFile}
+            activeClues={activeClues}
+            revealedClueCount={revealedClueCount}
+            onRevealNext={revealNextClue}
+            onRevealAll={revealAllClues}
+          />
+        </aside>
       </div>
     </section>
+  );
+}
+
+function CluePanel({
+  activeFile,
+  activeClues,
+  revealedClueCount,
+  onRevealNext,
+  onRevealAll,
+}: {
+  activeFile: string;
+  activeClues: string[];
+  revealedClueCount: number;
+  onRevealNext: () => void;
+  onRevealAll: () => void;
+}) {
+  return (
+    <>
+      <div className="flex flex-wrap items-start justify-between gap-3 lg:block">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-clay">
+            Clue eksplisit
+          </p>
+          <p className="mt-1 font-mono text-sm text-ink">{activeFile}</p>
+          <p className="mt-1 text-sm text-muted">
+            {revealedClueCount}/{activeClues.length} clue dibuka
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 lg:mt-4">
+          <button
+            type="button"
+            onClick={onRevealNext}
+            disabled={revealedClueCount >= activeClues.length}
+            className="rounded-full border border-clay px-3 py-1.5 text-xs font-medium text-clay transition-colors hover:bg-clay hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {revealedClueCount === 0
+              ? "Tampilkan clue pertama"
+              : revealedClueCount >= activeClues.length
+                ? "Semua clue terbuka"
+                : "Clue berikutnya"}
+          </button>
+          {revealedClueCount > 0 && revealedClueCount < activeClues.length && (
+            <button
+              type="button"
+              onClick={onRevealAll}
+              className="rounded-full px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface hover:text-ink"
+            >
+              Tampilkan semua
+            </button>
+          )}
+        </div>
+      </div>
+
+      {revealedClueCount === 0 ? (
+        <p className="mt-4 rounded-xl border border-dashed border-border px-3 py-3 text-sm leading-6 text-muted">
+          Buka clue untuk mendapat langkah eksplisit tentang file ini.
+        </p>
+      ) : (
+        <ol
+          aria-live="polite"
+          className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-6 text-ink"
+        >
+          {activeClues.slice(0, revealedClueCount).map((clue, index) => (
+            <li key={`${activeFile}-clue-${index}`}>{clue}</li>
+          ))}
+        </ol>
+      )}
+    </>
   );
 }
 
