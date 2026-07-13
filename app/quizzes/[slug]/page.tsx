@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getChapter } from "@/content/chapters";
+import { CODING_GUIDE_SECTION_ID, getChapter } from "@/content/chapters";
 import {
   allQuizzes,
   getQuiz,
@@ -91,6 +91,19 @@ export default async function QuizPage({
           {isMiniProjectQuiz(quiz) ? quiz.title : chapter.title}
         </h1>
         <p className="mt-3 text-muted">{quiz.description}</p>
+        {!isMiniProjectQuiz(quiz) && (
+          <div className="mt-5 rounded-xl border border-clay/30 bg-clay-soft px-4 py-3">
+            <p className="text-sm text-ink">
+              Belum yakin mulai dari mana? Baca panduan coding challenge di materi bab ini.
+            </p>
+            <Link
+              href={`/chapters/${chapter.slug}#${CODING_GUIDE_SECTION_ID}`}
+              className="mt-2 inline-flex text-sm font-medium text-clay transition-colors hover:text-clay-hover"
+            >
+              Buka panduan coding challenge →
+            </Link>
+          </div>
+        )}
         <p className="mt-2 text-sm text-muted">
           {isMiniProjectQuiz(quiz)
             ? "Workspace multi-file · lulus jika semua hidden test terpenuhi"
