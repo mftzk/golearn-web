@@ -56,7 +56,7 @@ export default async function ChapterPage({
   const sections = getChapterSections(chapter);
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12">
+    <div className="mx-auto w-full max-w-[1920px] px-6 py-12">
       <Link href="/chapters" className="text-sm text-muted hover:text-ink transition-colors">
         ← Semua bab
       </Link>
@@ -83,8 +83,8 @@ export default async function ChapterPage({
             </div>
           </details>
 
-          <div className="grid gap-10 lg:grid-cols-2">
-        <div>
+          <div className="grid min-w-0 gap-10 xl:grid-cols-2">
+        <div className="min-w-0">
           <p className="text-sm font-medium text-clay mb-2">
             Bab {chapter.order} dari {chapters.length}
           </p>
@@ -149,7 +149,7 @@ export default async function ChapterPage({
           </div>
         </div>
 
-        <div className="lg:sticky lg:top-24 lg:self-start">
+        <div className="min-w-0 xl:sticky xl:top-24 xl:self-start">
           <CodeConsole
             chapterSlug={chapter.slug}
             initialCode={initialCode}
