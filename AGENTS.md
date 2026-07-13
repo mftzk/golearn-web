@@ -21,6 +21,14 @@ Key facts:
 
 All lessons live in one file: **`content/chapters.ts`** — a single `chapters: Chapter[]` array. Adding/adjusting a lesson = editing this array; the chapter list (`app/chapters/page.tsx`) and detail page (`app/chapters/[slug]/page.tsx` via `generateStaticParams`) derive from it automatically. `order` is the display number and must stay sequential; prev/next follows array position.
 
+GoLearn ditujukan untuk **pemula**. Saat membuat atau memodifikasi materi:
+
+- Jelaskan konsep secara bertahap dan jangan memakai sintaks yang belum diperkenalkan.
+- Terangkan istilah, simbol, dan alasan di balik setiap bagian kode penting dengan bahasa Indonesia yang sederhana.
+- Gunakan contoh kecil yang konkret, output yang jelas, dan instruksi praktik yang bisa diikuti tanpa menebak.
+- Pastikan materi, starter code, tugas, dan quiz selaras; quiz tidak boleh melompat ke konsep yang belum diajarkan.
+- Jika sebuah konsep membutuhkan pengetahuan sebelumnya, sebutkan dan ajarkan prasyarat minimumnya terlebih dahulu.
+
 Runnable panels execute in the **stdlib-only, no-network, unprivileged** runner. So `starterCode` must compile against the Go standard library only (no external modules, no cgo, no kernel/privileged APIs). Set `expectedOutput` only when output is deterministic; omit it for illustrative/machine-dependent programs.
 
 ## Deploy steps

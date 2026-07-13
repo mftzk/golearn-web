@@ -141,7 +141,20 @@ func main() {
 }
 \`\`\`
 
-Baris \`nama := "Go"\` membuat variabel bernama \`nama\` dan mengisinya dengan teks \`Go\`. Saat \`fmt.Println\` menerima lebih dari satu nilai, Go memberi spasi di antara nilai-nilai tersebut. Karena itu hasilnya adalah \`Halo, Go!\`.
+Baris \`nama := "Go"\` membuat variabel bernama \`nama\` dan mengisinya dengan teks \`Go\`.
+
+Tanda \`+\` di antara dua string berarti **menggabungkan teks** (*string concatenation*). Jadi, jika \`nama\` berisi \`"Go"\`, maka \`nama + "!"\` menghasilkan string baru \`"Go!"\`.
+
+Pada contoh tadi, \`fmt.Println("Halo,", nama+"!")\` menerima dua nilai: \`"Halo,"\` dan \`"Go!"\`. \`fmt.Println\` otomatis memberi satu spasi di antara nilai-nilai tersebut, sehingga hasil akhirnya \`Halo, Go!\`. Tanda \`+\` dipakai supaya tanda seru menempel pada nama, bukan menjadi nilai terpisah yang ikut diberi spasi.
+
+\`+\` juga bisa dipakai untuk penjumlahan angka, tetapi pada contoh ini kedua nilai yang digabungkan adalah string:
+
+\`\`\`go
+nama := "Go"
+fmt.Println("Halo,", nama, "!")     // Halo, Go !
+fmt.Println("Halo,", nama+"!")     // Halo, Go!
+fmt.Println("Halo, " + nama + "!")  // Halo, Go!
+\`\`\`
 
 ### 4. Membaca input dengan fmt.Scan
 
