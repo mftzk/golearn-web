@@ -38,8 +38,8 @@ export default async function QuizPage({
   const { slug } = await params;
   const quiz = getQuiz(slug);
   if (!quiz) notFound();
-  const chapter = isMiniProjectQuiz(quiz) ? null : getChapter(quiz.chapterSlug);
-  if (!isMiniProjectQuiz(quiz) && !chapter) notFound();
+  const chapter = getChapter(quiz.chapterSlug);
+  if (!chapter) notFound();
 
   const user = await getCurrentUser();
   if (!user) {
@@ -83,16 +83,18 @@ export default async function QuizPage({
       </Link>
       <div className="mt-8">
         <p className="text-sm font-medium uppercase tracking-wide text-clay">
-          {chapter ? `Quiz Bab ${chapter.order}` : "Mini project akhir course"}
+          {isMiniProjectQuiz(quiz)
+            ? `Mini project Bab ${chapter.order}`
+            : `Quiz Bab ${chapter.order}`}
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold text-ink">
-          {chapter?.title ?? quiz.title}
+          {isMiniProjectQuiz(quiz) ? quiz.title : chapter.title}
         </h1>
         <p className="mt-3 text-muted">{quiz.description}</p>
         <p className="mt-2 text-sm text-muted">
-          {chapter
-            ? "5 soal · skor minimal lulus 80%"
-            : "Workspace multi-file · lulus jika semua hidden test terpenuhi"}
+          {isMiniProjectQuiz(quiz)
+            ? "Workspace multi-file · lulus jika semua hidden test terpenuhi"
+            : "5 soal · skor minimal lulus 80%"}
         </p>
         {initialProgress && (
           <p className="mt-4 text-sm text-muted">

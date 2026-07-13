@@ -1,3 +1,5 @@
+import { pilotMiniProjects } from "@/content/mini-projects";
+
 export const QUIZ_PASSING_SCORE = 80;
 
 export interface QuizOption {
@@ -51,6 +53,7 @@ export interface MiniProjectTest {
 export interface MiniProjectQuiz {
   slug: string;
   kind: "mini_project";
+  chapterSlug: string;
   title: string;
   description: string;
   instructions: string;
@@ -94,6 +97,7 @@ export interface PublicMiniProjectFile {
 export interface PublicMiniProject {
   slug: string;
   kind: "mini_project";
+  chapterSlug: string;
   title: string;
   description: string;
   instructions: string;
@@ -1362,6 +1366,7 @@ func main() {
 export const miniProject: MiniProjectQuiz = {
   slug: "mini-project",
   kind: "mini_project",
+  chapterSlug: "capstone",
   title: "Mini Project: Todo CLI",
   description:
     "Bangun aplikasi todo berbasis terminal dengan workspace multi-file dan hidden tests.",
@@ -1500,7 +1505,11 @@ func main() {
   ],
 };
 
-export const allQuizzes: QuizDefinition[] = [...quizzes, miniProject];
+export const allQuizzes: QuizDefinition[] = [
+  ...quizzes,
+  miniProject,
+  ...pilotMiniProjects,
+];
 
 export function isMiniProjectQuiz(
   quiz: QuizDefinition,
@@ -1511,6 +1520,15 @@ export function isMiniProjectQuiz(
 export function getQuiz(slug: string): QuizDefinition | undefined {
   return allQuizzes.find((quiz) =>
     isMiniProjectQuiz(quiz) ? quiz.slug === slug : quiz.chapterSlug === slug,
+  );
+}
+
+export function getMiniProjectForChapter(
+  chapterSlug: string,
+): MiniProjectQuiz | undefined {
+  return allQuizzes.find(
+    (quiz): quiz is MiniProjectQuiz =>
+      isMiniProjectQuiz(quiz) && quiz.chapterSlug === chapterSlug,
   );
 }
 
@@ -1552,6 +1570,7 @@ export function toPublicMiniProject(
   return {
     slug: quiz.slug,
     kind: quiz.kind,
+    chapterSlug: quiz.chapterSlug,
     title: quiz.title,
     description: quiz.description,
     instructions: quiz.instructions,
@@ -1591,8 +1610,10 @@ export function isValidMiniProject(quiz: MiniProjectQuiz): boolean {
   const names = quiz.files.map((file) => file.name);
   const uniqueNames = new Set(names);
   return (
-    quiz.slug === "mini-project" &&
-    names.length === 3 &&
+    quiz.slug.trim().length > 0 &&
+    quiz.chapterSlug.trim().length > 0 &&
+    names.length >= 2 &&
+    names.length <= 8 &&
     uniqueNames.size === names.length &&
     names.every((name) => name.endsWith(".go")) &&
     quiz.files.every((file) => file.starterCode.trim().length > 0) &&
@@ -1601,7 +1622,8 @@ export function isValidMiniProject(quiz: MiniProjectQuiz): boolean {
         file.clues.length > 0 &&
         file.clues.every((clue) => clue.trim().length > 0),
     ) &&
-    quiz.tests.length === 5 &&
+    quiz.tests.length >= 3 &&
+    quiz.tests.length <= 8 &&
     quiz.tests.every((test) => test.expectedOutput.trim().length > 0)
   );
 }

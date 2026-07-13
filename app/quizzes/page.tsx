@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { chapters } from "@/content/chapters";
-import { allQuizzes, getQuiz, miniProject } from "@/content/quizzes";
+import {
+  allQuizzes,
+  getMiniProjectForChapter,
+  getQuiz,
+} from "@/content/quizzes";
 import { getCurrentUser } from "@/lib/auth";
 import { ensureSchema, getPool } from "@/lib/db";
 
@@ -34,7 +38,7 @@ export default async function QuizzesPage() {
       <p className="text-sm font-medium uppercase tracking-wide text-clay">Belajar sambil menguji diri</p>
       <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Quiz & Mini Project</h1>
       <p className="mt-3 max-w-2xl text-muted">
-        Uji pemahaman setiap bab lewat soal konsep dan coding challenge, lalu gabungkan semuanya dalam mini project Todo CLI.
+        Uji pemahaman setiap bab lewat soal konsep dan coding challenge, lalu praktikkan materinya dalam mini project per bab.
       </p>
       <p className="mt-5 text-sm text-muted">
         {user
@@ -46,13 +50,20 @@ export default async function QuizzesPage() {
         {chapters.map((chapter) => {
           const quiz = getQuiz(chapter.slug);
           const row = progress.get(chapter.slug);
+          const miniProject = getMiniProjectForChapter(chapter.slug);
+          const miniProgress = miniProject
+            ? progress.get(miniProject.slug)
+            : undefined;
           if (!quiz) return null;
 
           return (
-            <li key={chapter.slug}>
+            <li
+              key={chapter.slug}
+              className="overflow-hidden rounded-2xl border border-border bg-surface"
+            >
               <Link
                 href={`/quizzes/${chapter.slug}`}
-                className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-5 transition-all hover:border-clay/60 hover:shadow-softer group"
+                className="flex items-center gap-4 p-5 transition-all hover:bg-surface-alt group"
               >
                 <span
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium ${
@@ -72,39 +83,32 @@ export default async function QuizzesPage() {
                   {row && <span className="block">{row.attempts} percobaan</span>}
                 </span>
               </Link>
+              {miniProject && (
+                <Link
+                  href={`/quizzes/${miniProject.slug}`}
+                  className="flex items-center justify-between gap-4 border-t border-border bg-clay-soft/45 px-5 py-3 transition-colors hover:bg-clay-soft"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-xs font-medium uppercase tracking-wide text-clay">
+                      Mini project
+                    </span>
+                    <span className="mt-1 block truncate text-sm font-medium text-ink">
+                      {miniProject.title}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right text-xs text-muted">
+                    {miniProgress
+                      ? `${miniProgress.best_score}% terbaik`
+                      : "Mulai →"}
+                    {miniProgress && (
+                      <span className="block">{miniProgress.attempts} percobaan</span>
+                    )}
+                  </span>
+                </Link>
+              )}
             </li>
           );
         })}
-        <li>
-          <Link
-            href={`/quizzes/${miniProject.slug}`}
-            className="flex items-center gap-4 rounded-2xl border border-clay/40 bg-clay-soft p-5 transition-all hover:border-clay hover:shadow-softer group"
-          >
-            <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium ${
-                progress.get(miniProject.slug)?.passed
-                  ? "bg-clay text-white"
-                  : "bg-surface text-clay"
-              }`}
-            >
-              {progress.get(miniProject.slug)?.passed ? "✓" : "★"}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-medium text-ink transition-colors group-hover:text-clay">
-                {miniProject.title}
-              </span>
-              <span className="block text-sm text-muted">{miniProject.description}</span>
-            </span>
-            <span className="shrink-0 text-right text-xs text-muted">
-              {progress.get(miniProject.slug)
-                ? `${progress.get(miniProject.slug)?.best_score}% terbaik`
-                : "Belum dicoba"}
-              {progress.get(miniProject.slug) && (
-                <span className="block">{progress.get(miniProject.slug)?.attempts} percobaan</span>
-              )}
-            </span>
-          </Link>
-        </li>
       </ol>
     </div>
   );
