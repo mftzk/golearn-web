@@ -73,7 +73,11 @@ export default async function QuizPage({
     : null;
 
   return (
-    <div className={`mx-auto px-6 py-12 ${chapter ? "max-w-3xl" : "max-w-6xl"}`}>
+    <div
+      className={`mx-auto px-6 py-12 ${
+        isMiniProjectQuiz(quiz) ? "max-w-[1800px]" : "max-w-3xl"
+      }`}
+    >
       <Link href="/quizzes" className="text-sm text-muted transition-colors hover:text-ink">
         ← Semua quiz
       </Link>
