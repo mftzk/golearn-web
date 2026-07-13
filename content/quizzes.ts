@@ -193,7 +193,7 @@ func main() {
   {
     chapterSlug: "hello-go",
     title: "Quiz: Hello, Go",
-    description: "Latihan dasar package, main, dan fmt.Println.",
+    description: "Latihan dasar package main, fungsi main, output, variabel, dan fmt.Scan.",
     questions: [
       {
         id: "hello-go-1",
@@ -244,8 +244,8 @@ func main() {
       {
         id: "hello-go-5",
         type: "coding",
-        prompt: "Buat program sapaan yang bisa dipakai untuk banyak nama.",
-        instructions: "Baca satu nama dari stdin dan cetak `Halo, <nama>!`.",
+        prompt: "Buat program sapaan yang membaca nama dari input.",
+        instructions: "Baca satu nama dari stdin dengan `fmt.Scan`, lalu cetak `Halo, <nama>!` menggunakan nilai variabel tersebut.",
         starterCode: code`package main
 
 import (
@@ -263,7 +263,7 @@ func main() {
           { stdin: "Raka\n", expectedOutput: "Halo, Raka!" },
           { stdin: "GoLearner\n", expectedOutput: "Halo, GoLearner!" },
         ],
-        explanation: "Input dapat dibaca dengan fmt.Scan dan output dibuat dengan fmt.Println.",
+        explanation: "fmt.Scan(&nama) mengisi variabel nama dari stdin, lalu fmt.Println dapat mencetak nilai variabel tersebut.",
       },
     ],
   },

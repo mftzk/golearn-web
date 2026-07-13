@@ -98,11 +98,15 @@ func main() {
     slug: "hello-go",
     title: "Hello, Go",
     order: 2,
-    summary: "package main, fungsi main, dan fmt.Println",
+    summary: "package main, fungsi main, output, variabel, dan input sederhana",
     lessonMarkdown: `
+### 1. Struktur program Go
+
 Setiap program Go dimulai dari **package**. Program yang bisa dijalankan langsung harus berada di \`package main\`, dan harus punya fungsi \`func main()\` — itu adalah titik masuk (entry point) program.
 
-Untuk mencetak sesuatu ke layar, kita pakai paket standar \`fmt\` (format) dan fungsi \`fmt.Println\`.
+### 2. Mencetak teks dengan fmt.Println
+
+Untuk mencetak sesuatu ke layar, kita pakai paket standar \`fmt\` (format) dan fungsi \`fmt.Println\`. Nama paket ditulis di bagian \`import\`, lalu fungsinya dipanggil dengan format \`fmt.Println(...)\`.
 
 \`\`\`go
 package main
@@ -114,14 +118,59 @@ func main() {
 }
 \`\`\`
 
-Coba jalankan kode di sebelah kanan. Lalu ubah teksnya jadi namamu sendiri, dan jalankan lagi.
+Jalankan contoh di atas. Panel latihan di sebelah kanan menggunakan versi variabel dengan hasil output yang sama.
+
+### 3. Mencetak nilai dari variabel
+
+Teks tidak harus selalu ditulis langsung di dalam \`fmt.Println\`. Kita bisa menyimpan nilai dalam **variabel**, lalu mencetak variabel tersebut.
+
+\`\`\`go
+package main
+
+import "fmt"
+
+func main() {
+\tnama := "Go"
+\tfmt.Println("Halo,", nama+"!")
+}
+\`\`\`
+
+Baris \`nama := "Go"\` membuat variabel bernama \`nama\` dan mengisinya dengan teks \`Go\`. Saat \`fmt.Println\` menerima lebih dari satu nilai, Go memberi spasi di antara nilai-nilai tersebut. Karena itu hasilnya adalah \`Halo, Go!\`.
+
+### 4. Membaca input dengan fmt.Scan
+
+Agar satu program bisa menyapa banyak orang, nama tidak perlu ditulis di dalam kode. Kita bisa membacanya dari **input standar** menggunakan \`fmt.Scan\`.
+
+\`\`\`go
+package main
+
+import "fmt"
+
+func main() {
+\tvar nama string
+\tfmt.Scan(&nama)
+\tfmt.Println("Halo,", nama+"!")
+}
+\`\`\`
+
+Urutannya adalah:
+
+1. \`var nama string\` membuat variabel teks bernama \`nama\`.
+2. \`fmt.Scan(&nama)\` membaca satu kata dari input dan mengisikan nilainya ke \`nama\`.
+3. \`&nama\` berarti alamat variabel \`nama\`; alamat ini diperlukan agar \`fmt.Scan\` bisa mengubah isi variabel tersebut.
+4. \`fmt.Println\` mencetak sapaan menggunakan nilai yang sudah dibaca.
+
+Jika inputnya \`GoLearner\`, outputnya menjadi \`Halo, GoLearner!\`. \`fmt.Scan\` membaca nilai yang dipisahkan spasi, jadi contoh ini cocok untuk nama satu kata.
+
+Coba jalankan kode di panel, lalu ubah nilai variabel \`nama\`. Setelah itu, kerjakan quiz untuk mencoba versi yang menerima nama dari input.
 `,
     starterCode: `package main
 
 import "fmt"
 
 func main() {
-	fmt.Println("Halo, Go!")
+	nama := "Go"
+	fmt.Println("Halo,", nama+"!")
 }
 `,
     solutionCode: `package main
@@ -129,7 +178,8 @@ func main() {
 import "fmt"
 
 func main() {
-	fmt.Println("Halo, Go!")
+	nama := "Go"
+	fmt.Println("Halo,", nama+"!")
 }
 `,
     expectedOutput: "Halo, Go!",
