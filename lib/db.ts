@@ -57,6 +57,16 @@ async function migrate() {
       UNIQUE (user_id, chapter_slug)
     );
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS quiz_workspace_drafts (
+      id          BIGSERIAL PRIMARY KEY,
+      user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      quiz_slug   TEXT NOT NULL,
+      files       JSONB NOT NULL,
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (user_id, quiz_slug)
+    );
+  `);
 }
 
 export function ensureSchema(): Promise<void> {

@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import {
   getQuiz,
+  isMiniProjectQuiz,
+  isValidMiniProject,
   isValidQuiz,
 } from "@/content/quizzes";
 import { getCurrentUser } from "@/lib/auth";
 import {
   gradeCodingAnswer,
   gradeConceptAnswer,
+  gradeMiniProjectAnswer,
 } from "@/lib/quiz";
 import { RunnerClientError } from "@/lib/runner";
+import {
+  hasExpectedWorkspaceFiles,
+  MAX_WORKSPACE_SOURCE_BYTES,
+  parseWorkspaceFiles,
+  workspaceSourceBytes,
+} from "@/lib/workspace";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -25,6 +34,43 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (!quiz) {
     return NextResponse.json({ error: "quiz tidak ditemukan" }, { status: 404 });
   }
+
+  if (isMiniProjectQuiz(quiz)) {
+    if (!isValidMiniProject(quiz)) {
+      return NextResponse.json({ error: "mini project belum dikonfigurasi dengan benar" }, { status: 500 });
+    }
+
+    const body = await request.json().catch(() => null);
+    const files = parseWorkspaceFiles(body?.files);
+    if (
+      !files ||
+      !hasExpectedWorkspaceFiles(files, quiz.files.map((file) => file.name))
+    ) {
+      return NextResponse.json({ error: "file workspace tidak valid" }, { status: 400 });
+    }
+    if (workspaceSourceBytes(files) > MAX_WORKSPACE_SOURCE_BYTES) {
+      return NextResponse.json({ error: "source workspace terlalu besar" }, { status: 413 });
+    }
+
+    try {
+      const grade = await gradeMiniProjectAnswer(quiz, files);
+      return NextResponse.json({
+        correct: grade.correct,
+        passedTests: grade.passedTests,
+        totalTests: grade.totalTests,
+        feedback: grade.correct
+          ? "Semua hidden test lulus."
+          : "Kode belum lulus semua hidden test.",
+        stderr: grade.stderr || null,
+      });
+    } catch (error) {
+      if (error instanceof RunnerClientError) {
+        return NextResponse.json({ error: error.message }, { status: 502 });
+      }
+      return NextResponse.json({ error: "gagal memeriksa project" }, { status: 500 });
+    }
+  }
+
   if (!isValidQuiz(quiz)) {
     return NextResponse.json({ error: "quiz belum dikonfigurasi dengan benar" }, { status: 500 });
   }

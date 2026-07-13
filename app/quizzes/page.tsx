@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { chapters } from "@/content/chapters";
-import { getQuiz } from "@/content/quizzes";
+import { allQuizzes, getQuiz, miniProject } from "@/content/quizzes";
 import { getCurrentUser } from "@/lib/auth";
 import { ensureSchema, getPool } from "@/lib/db";
 
@@ -32,13 +32,13 @@ export default async function QuizzesPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       <p className="text-sm font-medium uppercase tracking-wide text-clay">Belajar sambil menguji diri</p>
-      <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Quiz per Bab</h1>
+      <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Quiz & Mini Project</h1>
       <p className="mt-3 max-w-2xl text-muted">
-        Lima soal singkat untuk setiap bab: konsep, benar atau salah, dan satu coding challenge dengan hidden test.
+        Uji pemahaman setiap bab lewat soal konsep dan coding challenge, lalu gabungkan semuanya dalam mini project Todo CLI.
       </p>
       <p className="mt-5 text-sm text-muted">
         {user
-          ? `${passedCount} dari ${chapters.length} quiz lulus.`
+          ? `${passedCount} dari ${allQuizzes.length} latihan lulus.`
           : "Masuk untuk mulai mengerjakan dan menyimpan skor."}
       </p>
 
@@ -75,6 +75,36 @@ export default async function QuizzesPage() {
             </li>
           );
         })}
+        <li>
+          <Link
+            href={`/quizzes/${miniProject.slug}`}
+            className="flex items-center gap-4 rounded-2xl border border-clay/40 bg-clay-soft p-5 transition-all hover:border-clay hover:shadow-softer group"
+          >
+            <span
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium ${
+                progress.get(miniProject.slug)?.passed
+                  ? "bg-clay text-white"
+                  : "bg-surface text-clay"
+              }`}
+            >
+              {progress.get(miniProject.slug)?.passed ? "✓" : "★"}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium text-ink transition-colors group-hover:text-clay">
+                {miniProject.title}
+              </span>
+              <span className="block text-sm text-muted">{miniProject.description}</span>
+            </span>
+            <span className="shrink-0 text-right text-xs text-muted">
+              {progress.get(miniProject.slug)
+                ? `${progress.get(miniProject.slug)?.best_score}% terbaik`
+                : "Belum dicoba"}
+              {progress.get(miniProject.slug) && (
+                <span className="block">{progress.get(miniProject.slug)?.attempts} percobaan</span>
+              )}
+            </span>
+          </Link>
+        </li>
       </ol>
     </div>
   );

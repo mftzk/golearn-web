@@ -14,8 +14,9 @@ export default function Home() {
         <p className="mt-6 max-w-xl text-lg text-muted leading-relaxed">
           {chapters.length} bab, dari <span className="text-ink">Halo, Go</span> sampai{" "}
           <span className="text-ink">eBPF</span>. Setiap bab punya console
-          interaktif dan quiz fokus bab — tulis kode Go asli, jalankan sungguhan,
-          lalu cek pemahamanmu. Progress belajarmu tersimpan otomatis.
+          interaktif dan quiz fokus bab. Setelah itu, gabungkan semuanya dalam mini
+          project multi-file — tulis kode Go asli, jalankan sungguhan, lalu cek
+          pemahamanmu. Progress belajarmu tersimpan otomatis.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link
@@ -45,7 +46,7 @@ export default function Home() {
           />
           <FeatureCard
             title="Latihan dan quiz"
-            body="Setiap bab punya coding challenge dan quiz singkat untuk menguji pemahamanmu."
+            body="Setiap bab punya coding challenge dan quiz singkat, ditutup mini project Todo CLI dengan workspace lengkap."
           />
         </div>
       </section>

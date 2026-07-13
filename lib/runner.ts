@@ -15,7 +15,13 @@ export class RunnerClientError extends Error {
   }
 }
 
-export async function runCode(code: string, stdin?: string): Promise<RunnerResult> {
+export type RunnerFiles = Record<string, string>;
+
+async function requestRun(body: {
+  code?: string;
+  files?: RunnerFiles;
+  stdin?: string;
+}): Promise<RunnerResult> {
   const runnerUrl = process.env.RUNNER_URL;
   const runnerToken = process.env.RUNNER_TOKEN;
   if (!runnerUrl || !runnerToken) {
@@ -24,8 +30,6 @@ export async function runCode(code: string, stdin?: string): Promise<RunnerResul
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS);
-  const body: { code: string; stdin?: string } = { code };
-  if (stdin !== undefined) body.stdin = stdin;
 
   try {
     const response = await fetch(`${runnerUrl.replace(/\/$/, "")}/run`, {
@@ -50,4 +54,15 @@ export async function runCode(code: string, stdin?: string): Promise<RunnerResul
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export function runCode(code: string, stdin?: string): Promise<RunnerResult> {
+  return requestRun({ code, ...(stdin !== undefined ? { stdin } : {}) });
+}
+
+export function runWorkspace(
+  files: RunnerFiles,
+  stdin?: string,
+): Promise<RunnerResult> {
+  return requestRun({ files, ...(stdin !== undefined ? { stdin } : {}) });
 }

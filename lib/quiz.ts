@@ -1,10 +1,11 @@
 import type {
   ChapterQuiz,
   CodingQuestion,
+  MiniProjectQuiz,
   QuizAnswer,
   QuizQuestion,
 } from "@/content/quizzes";
-import { runCode } from "@/lib/runner";
+import { runCode, runWorkspace, type RunnerFiles } from "@/lib/runner";
 
 export interface ConceptGrade {
   valid: boolean;
@@ -13,6 +14,13 @@ export interface ConceptGrade {
 }
 
 export interface CodingGrade {
+  correct: boolean;
+  passedTests: number;
+  totalTests: number;
+  stderr: string;
+}
+
+export interface MiniProjectGrade {
   correct: boolean;
   passedTests: number;
   totalTests: number;
@@ -93,6 +101,36 @@ export async function gradeCodingAnswer(
     correct: passedTests === question.tests.length,
     passedTests,
     totalTests: question.tests.length,
+    stderr,
+  };
+}
+
+export async function gradeMiniProjectAnswer(
+  project: MiniProjectQuiz,
+  files: RunnerFiles,
+): Promise<MiniProjectGrade> {
+  const results = await Promise.all(
+    project.tests.map((test) => runWorkspace(files, test.stdin)),
+  );
+  let passedTests = 0;
+  let stderr = "";
+
+  for (let index = 0; index < project.tests.length; index += 1) {
+    const result = results[index];
+    const test = project.tests[index];
+    if (!result.ok) {
+      if (!stderr) stderr = result.stderr.slice(0, 4000);
+      continue;
+    }
+    if (result.stdout.trim() === test.expectedOutput.trim()) {
+      passedTests += 1;
+    }
+  }
+
+  return {
+    correct: passedTests === project.tests.length,
+    passedTests,
+    totalTests: project.tests.length,
     stderr,
   };
 }

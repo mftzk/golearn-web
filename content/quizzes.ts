@@ -37,10 +37,33 @@ export interface CodingQuestion {
   explanation: string;
 }
 
+export interface MiniProjectFile {
+  name: string;
+  starterCode: string;
+}
+
+export interface MiniProjectTest {
+  stdin: string;
+  expectedOutput: string;
+}
+
+export interface MiniProjectQuiz {
+  slug: string;
+  kind: "mini_project";
+  title: string;
+  description: string;
+  instructions: string;
+  files: MiniProjectFile[];
+  sampleInput: string;
+  tests: MiniProjectTest[];
+}
+
 export type QuizQuestion =
   | MultipleChoiceQuestion
   | TrueFalseQuestion
   | CodingQuestion;
+
+export type QuizDefinition = ChapterQuiz | MiniProjectQuiz;
 
 export interface ChapterQuiz {
   chapterSlug: string;
@@ -59,6 +82,21 @@ export interface PublicChapterQuiz {
   title: string;
   description: string;
   questions: PublicQuizQuestion[];
+}
+
+export interface PublicMiniProjectFile {
+  name: string;
+  content: string;
+}
+
+export interface PublicMiniProject {
+  slug: string;
+  kind: "mini_project";
+  title: string;
+  description: string;
+  instructions: string;
+  files: PublicMiniProjectFile[];
+  sampleInput: string;
 }
 
 export type QuizAnswer = string | boolean;
@@ -1319,8 +1357,157 @@ func main() {
   },
 ];
 
-export function getQuiz(chapterSlug: string): ChapterQuiz | undefined {
-  return quizzes.find((quiz) => quiz.chapterSlug === chapterSlug);
+export const miniProject: MiniProjectQuiz = {
+  slug: "mini-project",
+  kind: "mini_project",
+  title: "Mini Project: Todo CLI",
+  description:
+    "Bangun aplikasi todo berbasis terminal dengan workspace multi-file dan hidden tests.",
+  instructions: `
+Buat aplikasi Todo CLI yang membaca perintah dari stdin, satu perintah per baris.
+
+- ADD <judul> menambahkan task baru dengan ID berurutan mulai dari 1.
+- DONE <id> menandai task dengan ID tersebut sebagai selesai. ID yang tidak ada diabaikan.
+- LIST mencetak semua task sesuai urutan dibuat dengan format 1. [ ] Judul atau 1. [x] Judul.
+- SUMMARY mencetak jumlah total, selesai, dan masih terbuka:
+
+  Total: 2
+  Selesai: 1
+  Terbuka: 1
+
+Lengkapi logika pada todo.go dan format.go. Semua file berada dalam package main
+dan dijalankan bersama sebagai satu program.
+`.trim(),
+  sampleInput: `ADD Belajar struct
+ADD Latihan method
+DONE 1
+LIST
+SUMMARY
+`,
+  files: [
+    {
+      name: "main.go",
+      starterCode: code`package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	tasks := []Task{}
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+
+		fields := strings.Fields(line)
+		command := strings.ToUpper(fields[0])
+		switch command {
+		case "ADD":
+			title := strings.TrimSpace(strings.TrimPrefix(line, fields[0]))
+			tasks = addTask(tasks, title)
+		case "DONE":
+			if len(fields) != 2 {
+				continue
+			}
+			id, err := strconv.Atoi(fields[1])
+			if err != nil {
+				continue
+			}
+			tasks = completeTask(tasks, id)
+		case "LIST":
+			for _, task := range tasks {
+				fmt.Println(formatTask(task))
+			}
+		case "SUMMARY":
+			fmt.Println(formatSummary(tasks))
+		}
+	}
+}
+`,
+    },
+    {
+      name: "todo.go",
+      starterCode: code`package main
+
+type Task struct {
+	ID    int
+	Title string
+	Done  bool
+}
+
+func addTask(tasks []Task, title string) []Task {
+	// TODO: tambahkan task baru dengan ID berurutan.
+	return tasks
+}
+
+func completeTask(tasks []Task, id int) []Task {
+	// TODO: tandai task dengan ID yang sesuai sebagai selesai.
+	return tasks
+}
+`,
+    },
+    {
+      name: "format.go",
+      starterCode: code`package main
+
+import "fmt"
+
+func formatTask(task Task) string {
+	// TODO: gunakan [ ] untuk task terbuka dan [x] untuk task selesai.
+	return fmt.Sprintf("%d. [ ] %s", task.ID, task.Title)
+}
+
+func formatSummary(tasks []Task) string {
+	// TODO: hitung jumlah task selesai dan yang masih terbuka.
+	return fmt.Sprintf("Total: %d\nSelesai: %d\nTerbuka: %d", len(tasks), 0, len(tasks))
+}
+`,
+    },
+  ],
+  tests: [
+    {
+      stdin: "ADD Belajar Go\nADD Membuat program\nLIST\n",
+      expectedOutput: "1. [ ] Belajar Go\n2. [ ] Membuat program",
+    },
+    {
+      stdin: "ADD Belajar Go\nDONE 1\nLIST\n",
+      expectedOutput: "1. [x] Belajar Go",
+    },
+    {
+      stdin: "ADD Satu\nADD Dua\nDONE 2\nSUMMARY\n",
+      expectedOutput: "Total: 2\nSelesai: 1\nTerbuka: 1",
+    },
+    {
+      stdin: "SUMMARY\n",
+      expectedOutput: "Total: 0\nSelesai: 0\nTerbuka: 0",
+    },
+    {
+      stdin: "ADD A\nADD B\nDONE 1\nDONE 99\nLIST\nSUMMARY\n",
+      expectedOutput: "1. [x] A\n2. [ ] B\nTotal: 2\nSelesai: 1\nTerbuka: 1",
+    },
+  ],
+};
+
+export const allQuizzes: QuizDefinition[] = [...quizzes, miniProject];
+
+export function isMiniProjectQuiz(
+  quiz: QuizDefinition,
+): quiz is MiniProjectQuiz {
+  return "kind" in quiz && quiz.kind === "mini_project";
+}
+
+export function getQuiz(slug: string): QuizDefinition | undefined {
+  return allQuizzes.find((quiz) =>
+    isMiniProjectQuiz(quiz) ? quiz.slug === slug : quiz.chapterSlug === slug,
+  );
 }
 
 export function toPublicQuiz(quiz: ChapterQuiz): PublicChapterQuiz {
@@ -1355,6 +1542,23 @@ export function toPublicQuiz(quiz: ChapterQuiz): PublicChapterQuiz {
   };
 }
 
+export function toPublicMiniProject(
+  quiz: MiniProjectQuiz,
+): PublicMiniProject {
+  return {
+    slug: quiz.slug,
+    kind: quiz.kind,
+    title: quiz.title,
+    description: quiz.description,
+    instructions: quiz.instructions,
+    sampleInput: quiz.sampleInput,
+    files: quiz.files.map((file) => ({
+      name: file.name,
+      content: file.starterCode,
+    })),
+  };
+}
+
 export function isValidQuiz(quiz: ChapterQuiz): boolean {
   if (quiz.questions.length !== 5) return false;
   const ids = new Set(quiz.questions.map((question) => question.id));
@@ -1375,5 +1579,19 @@ export function isValidQuiz(quiz: ChapterQuiz): boolean {
     trueFalseCount === 1 &&
     codingQuestions.length === 1 &&
     codingQuestions[0].tests.length === 3
+  );
+}
+
+export function isValidMiniProject(quiz: MiniProjectQuiz): boolean {
+  const names = quiz.files.map((file) => file.name);
+  const uniqueNames = new Set(names);
+  return (
+    quiz.slug === "mini-project" &&
+    names.length === 3 &&
+    uniqueNames.size === names.length &&
+    names.every((name) => name.endsWith(".go")) &&
+    quiz.files.every((file) => file.starterCode.trim().length > 0) &&
+    quiz.tests.length === 5 &&
+    quiz.tests.every((test) => test.expectedOutput.trim().length > 0)
   );
 }
