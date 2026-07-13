@@ -1375,8 +1375,11 @@ Buat aplikasi Todo CLI yang membaca perintah dari stdin, satu perintah per baris
   Selesai: 1
   Terbuka: 1
 
-Lengkapi logika pada todo.go dan format.go. Semua file berada dalam package main
-dan dijalankan bersama sebagai satu program.
+Starter code sengaja hanya berisi komentar panduan. Tulis seluruh kode yang
+diperlukan pada ketiga file, termasuk import, struct, function, dan alur main.
+package main dan func main() sudah disediakan agar starter tetap bisa di-Run.
+Semua file berada dalam package main dan dijalankan bersama sebagai satu
+program.
 `.trim(),
   sampleInput: `ADD Belajar struct
 ADD Latihan method
@@ -1389,47 +1392,23 @@ SUMMARY
       name: "main.go",
       starterCode: code`package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
-)
+// TODO: Buat import yang dibutuhkan. Pertimbangkan:
+// - bufio untuk membaca stdin per baris.
+// - fmt untuk mencetak output.
+// - os untuk mengakses os.Stdin.
+// - strconv untuk mengubah ID dari string menjadi int.
+// - strings untuk memproses command dan judul task.
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	tasks := []Task{}
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
-		}
-
-		fields := strings.Fields(line)
-		command := strings.ToUpper(fields[0])
-		switch command {
-		case "ADD":
-			title := strings.TrimSpace(strings.TrimPrefix(line, fields[0]))
-			tasks = addTask(tasks, title)
-		case "DONE":
-			if len(fields) != 2 {
-				continue
-			}
-			id, err := strconv.Atoi(fields[1])
-			if err != nil {
-				continue
-			}
-			tasks = completeTask(tasks, id)
-		case "LIST":
-			for _, task := range tasks {
-				fmt.Println(formatTask(task))
-			}
-		case "SUMMARY":
-			fmt.Println(formatSummary(tasks))
-		}
-	}
+	// TODO: Buat scanner dari os.Stdin.
+	// TODO: Siapkan slice tasks untuk menyimpan semua Task.
+	// TODO: Baca input baris demi baris sampai EOF.
+	// TODO: Abaikan baris kosong dan pecah setiap baris menjadi command dan argumen.
+	// TODO: Implementasikan dispatch command:
+	// - ADD <judul> memanggil addTask.
+	// - DONE <id> memanggil completeTask.
+	// - LIST mencetak setiap task memakai formatTask.
+	// - SUMMARY mencetak hasil formatSummary.
 }
 `,
     },
@@ -1437,38 +1416,39 @@ func main() {
       name: "todo.go",
       starterCode: code`package main
 
-type Task struct {
-	ID    int
-	Title string
-	Done  bool
-}
+// TODO: Definisikan struct Task dengan field:
+// - ID int
+// - Title string
+// - Done bool
 
-func addTask(tasks []Task, title string) []Task {
-	// TODO: tambahkan task baru dengan ID berurutan.
-	return tasks
-}
+// TODO: Buat func addTask(tasks []Task, title string) []Task.
+// - Buat ID baru berurutan mulai dari 1.
+// - Tambahkan task baru dengan Done=false.
+// - Kembalikan slice tasks yang sudah diperbarui.
 
-func completeTask(tasks []Task, id int) []Task {
-	// TODO: tandai task dengan ID yang sesuai sebagai selesai.
-	return tasks
-}
+// TODO: Buat func completeTask(tasks []Task, id int) []Task.
+// - Cari task berdasarkan ID.
+// - Tandai Done=true jika task ditemukan.
+// - Abaikan ID yang tidak ada.
 `,
     },
     {
       name: "format.go",
       starterCode: code`package main
 
-import "fmt"
+// TODO: Import library yang dibutuhkan untuk membuat string output.
 
-func formatTask(task Task) string {
-	// TODO: gunakan [ ] untuk task terbuka dan [x] untuk task selesai.
-	return fmt.Sprintf("%d. [ ] %s", task.ID, task.Title)
-}
+// TODO: Buat func formatTask(task Task) string.
+// - Gunakan "[ ]" untuk task yang belum selesai.
+// - Gunakan "[x]" untuk task yang selesai.
+// - Gunakan format: 1. [ ] Judul.
 
-func formatSummary(tasks []Task) string {
-	// TODO: hitung jumlah task selesai dan yang masih terbuka.
-	return fmt.Sprintf("Total: %d\nSelesai: %d\nTerbuka: %d", len(tasks), 0, len(tasks))
-}
+// TODO: Buat func formatSummary(tasks []Task) string.
+// - Hitung total task, jumlah yang selesai, dan jumlah yang masih terbuka.
+// - Kembalikan output dalam tiga baris:
+//   Total: 2
+//   Selesai: 1
+//   Terbuka: 1
 `,
     },
   ],
